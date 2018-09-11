@@ -32,8 +32,8 @@ bool Steam::restartAppIfNecessary(int value){
   return SteamAPI_RestartAppIfNecessary((AppId_t)value);
 }
 // Initialize Steamworks
-int Steam::steamInit(uint32 appID) {
-  if (!SteamAPI_RestartAppIfNecessary(appID)) {
+int Steam::steamInit(uint32 appID, bool force) {
+  if (!force && !SteamAPI_RestartAppIfNecessary(appID)) {
     return ERR_NO_CLIENT;
   }
 

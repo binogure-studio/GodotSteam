@@ -15,7 +15,7 @@ public:
   enum {
     OFFLINE=0, ONLINE=1, BUSY=2, AWAY=3, SNOOZE=4, LF_TRADE, LF_PLAY, STATE_MAX, NOT_OFFLINE=8, ALL=9,
     TOP_LEFT=0, TOP_RIGHT=1, BOT_LEFT=2, BOT_RIGHT=3,
-    INIT_OK, ERR_API_NOT_INIT=1, ERR_NO_CLIENT=2, ERR_NO_CONNECTION=3,
+    INIT_OK=0, ERR_API_NOT_INIT=1, ERR_NO_CLIENT=2, ERR_NO_CONNECTION=3,
     AVATAR_SMALL=0, AVATAR_MEDIUM, AVATAR_LARGE,
     GLOBAL=0, GLOBAL_AROUND_USER=1, FRIENDS=2, USERS=3,
     LOBBY_OK=0, LOBBY_NO_CONNECTION=1, LOBBY_TIMEOUT=2, LOBBY_FAIL=3, LOBBY_ACCESS_DENIED=4, LOBBY_LIMIT_EXCEEDED=5,
@@ -33,7 +33,7 @@ public:
   Image drawAvatar(int size, uint8* buffer);
   // Steamworks ///////////////////////////////
   bool restartAppIfNecessary(int value);
-  int steamInit(uint32 appID);
+  int steamInit(uint32 appID, bool force);
   bool isSteamRunning();
   // Apps /////////////////////////////////////
   bool hasOtherApp(int value);
