@@ -1027,7 +1027,6 @@ void Steam::_bind_methods(){
   ObjectTypeDB::bind_method("getLeaderboardName", &Steam::getLeaderboardName);
   ObjectTypeDB::bind_method("getLeaderboardEntryCount", &Steam::getLeaderboardEntryCount);
   ObjectTypeDB::bind_method(_MD("downloadLeaderboardEntries", "range_start", "range_end", "type"), &Steam::downloadLeaderboardEntries, DEFVAL(GLOBAL));
-  ObjectTypeDB::bind_method(_MD("downloadLeaderboardEntriesForUsers", "users_id"), &Steam::downloadLeaderboardEntriesForUsers);
   ObjectTypeDB::bind_method(_MD("uploadLeaderboardScore", "score", "keep_best"), &Steam::uploadLeaderboardScore, DEFVAL(true));
   ObjectTypeDB::bind_method("getLeaderboardEntries", &Steam::getLeaderboardEntries);
   ObjectTypeDB::bind_method("getAchievementAndUnlockTime", &Steam::getAchievementAndUnlockTime);
