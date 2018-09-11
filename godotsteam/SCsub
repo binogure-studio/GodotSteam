@@ -1,4 +1,3 @@
-
 # SCsub
 Import('env')
 
