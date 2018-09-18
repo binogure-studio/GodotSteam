@@ -80,6 +80,8 @@ bool GodotSteamUserstats::storeStats() {
 
 void GodotSteamUserstats::findLeaderboard(const String &name) {
   if (!isSteamUserstatsReady()) {
+    emit_signal("leaderboard_load_failed", "Steam user stats not initialized");
+
     return;
   }
 
@@ -92,11 +94,11 @@ void GodotSteamUserstats::findLeaderboard(const String &name) {
 void GodotSteamUserstats::OnFindLeaderboard(
     LeaderboardFindResult_t *pFindLeaderboardResult, bool bIOFailure) {
   if (!pFindLeaderboardResult->m_bLeaderboardFound || bIOFailure) {
-    emit_signal("leaderboard_loaded", "Leaderboard not found", false);
+    emit_signal("leaderboard_load_failed", "Leaderboard not found");
   } else {
     uint8 sLeaderboard = (uint8)pFindLeaderboardResult->m_hSteamLeaderboard;
 
-    emit_signal("leaderboard_loaded", sLeaderboard, true);
+    emit_signal("leaderboard_loaded", sLeaderboard);
   }
 }
 
@@ -118,6 +120,8 @@ int GodotSteamUserstats::getLeaderboardEntryCount() {
 void GodotSteamUserstats::downloadLeaderboardEntries(int rStart, int rEnd,
                                                      int type) {
   if (!isSteamUserstatsReady()) {
+    emit_signal("leaderboard_entries_load_failed", "Steam user stats not initialized");
+
     return;
   }
 
@@ -133,6 +137,8 @@ void GodotSteamUserstats::downloadLeaderboardEntries(int rStart, int rEnd,
 
 void GodotSteamUserstats::uploadLeaderboardScore(int score, bool keepBest) {
   if (!isSteamUserstatsReady()) {
+    emit_signal("leaderboard_upload_failed", "Steam user stats not initialized");
+
     return;
   }
 
@@ -148,6 +154,8 @@ void GodotSteamUserstats::OnUploadScore(LeaderboardScoreUploaded_t *callData,
                                bool bIOFailure) {
   // Incorrect leaderboard
   if (callData->m_hSteamLeaderboard != leaderboardHandle) {
+    emit_signal("leaderboard_upload_failed", "Invalid leaderboard loaded");
+
     return;
   }
 
@@ -257,9 +265,16 @@ void GodotSteamUserstats::_bind_methods() {
   ObjectTypeDB::bind_method("indicateAchievementProgress",
                             &GodotSteamUserstats::indicateAchievementProgress);
 
-  ADD_SIGNAL(MethodInfo("leaderboard_loaded",
-                        PropertyInfo(Variant::INT, "leaderboard_name")));
+  ADD_SIGNAL(MethodInfo("leaderboard_loaded", PropertyInfo(Variant::INT, "leaderboard_name")));
+  ADD_SIGNAL(MethodInfo("leaderboard_load_failed", PropertyInfo(Variant::STRING, "reason")));
+
   ADD_SIGNAL(MethodInfo("leaderboard_entries_loaded"));
+  ADD_SIGNAL(MethodInfo("leaderboard_entries_load_failed", PropertyInfo(Variant::STRING, "reason")));
+
+  ADD_SIGNAL(MethodInfo("leaderboard_upload_failed", PropertyInfo(Variant::STRING, "reason")));
+  ADD_SIGNAL(MethodInfo("leaderboard_uploaded", PropertyInfo(Variant::BOOL, "success"),
+          PropertyInfo(Variant::INT, "score"), PropertyInfo(Variant::BOOL, "score_changed"),
+          PropertyInfo(Variant::INT, "global_rank_new"), PropertyInfo(Variant::INT, "global_rank_previous")));
 
   BIND_CONSTANT(LEADERBOARD_GLOBAL);
   BIND_CONSTANT(LEADERBOARD_AROUND_USER);
