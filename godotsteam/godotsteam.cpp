@@ -32,7 +32,7 @@ bool GodotSteam::restartAppIfNecessary(int value) {
 
 // Initialize Steamworks
 int GodotSteam::steamInit(uint32 appID, bool force) {
-  if (!force && !SteamAPI_RestartAppIfNecessary(appID)) {
+  if (!force && restartAppIfNecessary(appID)) {
     return STEAM_INIT_NO_CLIENT_ERROR;
   }
 

@@ -159,8 +159,19 @@ void GodotSteamUserstats::OnUploadScore(LeaderboardScoreUploaded_t *callData,
     return;
   }
 
-  emit_signal("leaderboard_uploaded", callData->m_bSuccess && bIOFailure,
-              callData->m_nScore, callData->m_bScoreChanged,
+  if (bIOFailure) {
+    emit_signal("leaderboard_upload_failed", "IO faillure");
+
+    return;
+  }
+
+  if (callData->m_bSuccess != 1) {
+    emit_signal("leaderboard_upload_failed", "Request failed");
+
+    return;
+  }
+
+  emit_signal("leaderboard_uploaded", callData->m_nScore, callData->m_bScoreChanged,
               callData->m_nGlobalRankNew, callData->m_nGlobalRankPrevious);
 }
 
@@ -272,8 +283,7 @@ void GodotSteamUserstats::_bind_methods() {
   ADD_SIGNAL(MethodInfo("leaderboard_entries_load_failed", PropertyInfo(Variant::STRING, "reason")));
 
   ADD_SIGNAL(MethodInfo("leaderboard_upload_failed", PropertyInfo(Variant::STRING, "reason")));
-  ADD_SIGNAL(MethodInfo("leaderboard_uploaded", PropertyInfo(Variant::BOOL, "success"),
-          PropertyInfo(Variant::INT, "score"), PropertyInfo(Variant::BOOL, "score_changed"),
+  ADD_SIGNAL(MethodInfo("leaderboard_uploaded", PropertyInfo(Variant::INT, "score"), PropertyInfo(Variant::BOOL, "score_changed"),
           PropertyInfo(Variant::INT, "global_rank_new"), PropertyInfo(Variant::INT, "global_rank_previous")));
 
   BIND_CONSTANT(LEADERBOARD_GLOBAL);
