@@ -44,7 +44,7 @@ public:
   void downloadLeaderboardEntriesForUsers(Array usersID);
   void uploadLeaderboardScore(int score, bool keepBest = false);
   void getDownloadedLeaderboardEntry(SteamLeaderboardEntries_t eHandle, int entryCount);
-  void setLeaderboardHandle(SteamLeaderboard_t lHandle);
+  void setLeaderboardHandle(uint64 lHandle);
   uint64 getLeaderboardHandle();
   Array getLeaderboardEntries();
   bool getAchievementAndUnlockTime(const String &name, bool achieved, int unlockTime);

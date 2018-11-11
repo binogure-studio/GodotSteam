@@ -96,6 +96,8 @@ void GodotSteamUserstats::OnFindLeaderboard(
   if (!pFindLeaderboardResult->m_bLeaderboardFound || bIOFailure) {
     emit_signal("leaderboard_load_failed", "Leaderboard not found");
   } else {
+    setLeaderboardHandle(pFindLeaderboardResult->m_hSteamLeaderboard);
+
     uint8 sLeaderboard = (uint8)pFindLeaderboardResult->m_hSteamLeaderboard;
 
     emit_signal("leaderboard_loaded", sLeaderboard);
@@ -211,7 +213,7 @@ void GodotSteamUserstats::getDownloadedLeaderboardEntry(
   }
 }
 
-void GodotSteamUserstats::setLeaderboardHandle(uint64 lHandle) {
+void GodotSteamUserstats::setLeaderboardHandle(SteamLeaderboard_t lHandle) {
   leaderboardHandle = (uint64)lHandle;
 }
 
@@ -257,7 +259,6 @@ void GodotSteamUserstats::_bind_methods() {
   ObjectTypeDB::bind_method("setStatFloat", &GodotSteamUserstats::setStatFloat);
   ObjectTypeDB::bind_method("setStatInt", &GodotSteamUserstats::setStatInt);
   ObjectTypeDB::bind_method("storeStats", &GodotSteamUserstats::storeStats);
-  ObjectTypeDB::bind_method("setLeaderboardHandle", &GodotSteamUserstats::setLeaderboardHandle);
   ObjectTypeDB::bind_method(_MD("findLeaderboard", "name"),
                             &GodotSteamUserstats::findLeaderboard);
   ObjectTypeDB::bind_method("getLeaderboardName",
