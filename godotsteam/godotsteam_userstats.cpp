@@ -211,7 +211,7 @@ void GodotSteamUserstats::getDownloadedLeaderboardEntry(
   }
 }
 
-void GodotSteamUserstats::updateLeaderboardHandle(SteamLeaderboard_t lHandle) {
+void GodotSteamUserstats::setLeaderboardHandle(uint64 lHandle) {
   leaderboardHandle = (uint64)lHandle;
 }
 
@@ -257,6 +257,7 @@ void GodotSteamUserstats::_bind_methods() {
   ObjectTypeDB::bind_method("setStatFloat", &GodotSteamUserstats::setStatFloat);
   ObjectTypeDB::bind_method("setStatInt", &GodotSteamUserstats::setStatInt);
   ObjectTypeDB::bind_method("storeStats", &GodotSteamUserstats::storeStats);
+  ObjectTypeDB::bind_method("setLeaderboardHandle", &GodotSteamUserstats::setLeaderboardHandle);
   ObjectTypeDB::bind_method(_MD("findLeaderboard", "name"),
                             &GodotSteamUserstats::findLeaderboard);
   ObjectTypeDB::bind_method("getLeaderboardName",
