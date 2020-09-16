@@ -122,30 +122,31 @@ Array GodotSteamFriends::getRecentPlayers() {
   return recents;
 }
 
-void GodotSteamFriends::getFriendAvatar(int size) {
-  if (size < AVATAR_SMALL || size > AVATAR_LARGE) {
+void GodotSteamFriends::getFriendAvatar(int size, int steam_id) {
+  if (size < AVATAR_SMALL || size > AVATAR_LARGE || !isSteamFriendsReady()) {
     return;
   }
 
-  if (!isSteamFriendsReady()) {
-    return;
+  if (steam_id == 0) {
+    steam_id = SteamUser()->GetSteamID().ConvertToUint64();
   }
 
+  CSteamID avatar_id = GodotSteamUtils::get_singleton()->createSteamID(steam_id);
   int iHandle = 0;
 
   switch (size) {
   case AVATAR_SMALL:
-    iHandle = SteamFriends()->GetSmallFriendAvatar(SteamUser()->GetSteamID());
+    iHandle = SteamFriends()->GetSmallFriendAvatar(avatar_id);
     size = 32;
     break;
 
   case AVATAR_MEDIUM:
-    iHandle = SteamFriends()->GetMediumFriendAvatar(SteamUser()->GetSteamID());
+    iHandle = SteamFriends()->GetMediumFriendAvatar(avatar_id);
     size = 64;
     break;
 
   case AVATAR_LARGE:
-    iHandle = SteamFriends()->GetLargeFriendAvatar(SteamUser()->GetSteamID());
+    iHandle = SteamFriends()->GetLargeFriendAvatar(avatar_id);
     size = 184;
     break;
 
@@ -159,8 +160,7 @@ void GodotSteamFriends::getFriendAvatar(int size) {
 
   // Has already loaded, simulate callback
   AvatarImageLoaded_t *avatarData = new AvatarImageLoaded_t;
-
-  avatarData->m_steamID = SteamUser()->GetSteamID();
+  avatarData->m_steamID = avatar_id;
   avatarData->m_iImage = iHandle;
   avatarData->m_iWide = size;
   avatarData->m_iTall = size;
@@ -174,16 +174,12 @@ void GodotSteamFriends::getFriendAvatar(int size) {
 
 // Signal that the avatar has been loaded
 void GodotSteamFriends::_avatar_loaded(AvatarImageLoaded_t *avatarData) {
-  if (avatarData->m_steamID != SteamUser()->GetSteamID()) {
-    return;
-  }
 
   int size = avatarData->m_iWide;
   // Get image buffer
   int buffSize = 4 * size * size;
   uint8 *iBuffer = new uint8[buffSize];
-  bool success =
-      SteamUtils()->GetImageRGBA(avatarData->m_iImage, iBuffer, buffSize);
+  bool success = SteamUtils()->GetImageRGBA(avatarData->m_iImage, iBuffer, buffSize);
   if (!success) {
     printf("[Steam] Failed to load image buffer from callback\n");
     return;
@@ -200,7 +196,7 @@ void GodotSteamFriends::_avatar_loaded(AvatarImageLoaded_t *avatarData) {
     return;
   }
   Image avatar = drawAvatar(size, iBuffer);
-  call_deferred("emit_signal", "avatar_loaded", rSize, avatar);
+  call_deferred("emit_signal", "avatar_loaded", rSize, (uint32_t) avatarData->m_steamID.ConvertToUint64(), avatar);
 }
 
 // Draw the given avatar
@@ -321,9 +317,10 @@ void GodotSteamFriends::_bind_methods() {
                             &GodotSteamFriends::setPlayedWith);
   ObjectTypeDB::bind_method("getRecentPlayers",
                             &GodotSteamFriends::getRecentPlayers);
-  ObjectTypeDB::bind_method(_MD("getFriendAvatar", "size"),
+  ObjectTypeDB::bind_method(_MD("getFriendAvatar", "size", "steam_id"),
                             &GodotSteamFriends::getFriendAvatar,
-                            DEFVAL(AVATAR_MEDIUM));
+                            DEFVAL(AVATAR_MEDIUM),
+                            DEFVAL(0));
   ObjectTypeDB::bind_method("getUserSteamGroups",
                             &GodotSteamFriends::getUserSteamGroups);
   ObjectTypeDB::bind_method("getUserSteamFriends",
@@ -343,7 +340,8 @@ void GodotSteamFriends::_bind_methods() {
       _MD("activateGameOverlayInviteDialog", "steam_id"),
       &GodotSteamFriends::activateGameOverlayInviteDialog);
 
-  ADD_SIGNAL(MethodInfo("avatar_loaded", PropertyInfo(Variant::INT, "size"),
+  ADD_SIGNAL(MethodInfo("avatar_loaded", PropertyInfo(Variant::INT, "steamID"),
+                        PropertyInfo(Variant::INT, "size"),
                         PropertyInfo(Variant::IMAGE, "avatar")));
 
   BIND_CONSTANT(AVATAR_SMALL);

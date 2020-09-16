@@ -38,7 +38,7 @@ public:
   void inviteFriend(int id, const String &conString);
   void setPlayedWith(int steam_id);
   Array getRecentPlayers();
-  void getFriendAvatar(int size = AVATAR_MEDIUM);
+  void getFriendAvatar(int size = AVATAR_MEDIUM, int steam_id = 0);
   Array getUserSteamGroups();
   Array getUserSteamFriends();
   void activateGameOverlay(const String &type);

@@ -39,6 +39,8 @@ public:
   bool storeStats();
   void findLeaderboard(const String &lName);
   String getLeaderboardName();
+  String getAchievementName(uint32 iAchievement);
+  int getNumAchievements();
   int getLeaderboardEntryCount();
   void downloadLeaderboardEntries(int rStart, int rEnd, int type = LEADERBOARD_GLOBAL);
   void downloadLeaderboardEntriesForUsers(Array usersID);

@@ -45,6 +45,14 @@ int GodotSteamUserstats::getStatInt(const String &s_key) {
   return statval;
 }
 
+String GodotSteamUserstats::getAchievementName(uint32 iAchievement) {
+  return SteamUserStats()->GetAchievementName(iAchievement);
+}
+
+int GodotSteamUserstats::getNumAchievements() {
+  return SteamUserStats()->GetNumAchievements();
+}
+
 bool GodotSteamUserstats::resetAllStats(bool bAchievementsToo) {
   SteamUserStats()->ResetAllStats(bAchievementsToo);
   return SteamUserStats()->StoreStats();
@@ -250,6 +258,8 @@ void GodotSteamUserstats::_bind_methods() {
                             &GodotSteamUserstats::getAchievement);
   ObjectTypeDB::bind_method("getStatFloat", &GodotSteamUserstats::getStatFloat);
   ObjectTypeDB::bind_method("getStatInt", &GodotSteamUserstats::getStatInt);
+  ObjectTypeDB::bind_method("getAchievementName", &GodotSteamUserstats::getAchievementName);
+  ObjectTypeDB::bind_method("getNumAchievements", &GodotSteamUserstats::getNumAchievements);
   ObjectTypeDB::bind_method("resetAllStats",
                             &GodotSteamUserstats::resetAllStats);
   ObjectTypeDB::bind_method("requestCurrentStats",
