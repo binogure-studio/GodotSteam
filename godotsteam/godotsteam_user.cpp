@@ -23,9 +23,8 @@ void GodotSteamUser::reset_singleton() {
 bool GodotSteamUser::isSteamUserReady() { return SteamUser() != NULL; }
 
 int GodotSteamUser::getSteamID() {
-  if (!isSteamUserReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamUserReady(), 0);
+
   CSteamID cSteamID = SteamUser()->GetSteamID();
   return cSteamID.ConvertToUint64();
 }
@@ -38,16 +37,14 @@ bool GodotSteamUser::loggedOn() {
 }
 
 int GodotSteamUser::getPlayerSteamLevel() {
-  if (!isSteamUserReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamUserReady(), 0);
+
   return SteamUser()->GetPlayerSteamLevel();
 }
 
 String GodotSteamUser::getUserDataFolder() {
-  if (!isSteamUserReady()) {
-    return "";
-  }
+  STEAM_FAIL_COND_V(!isSteamUserReady(), "");
+
   const int cubBuffer = 256;
   char *pchBuffer = new char[cubBuffer];
   SteamUser()->GetUserDataFolder((char *)pchBuffer, cubBuffer);
@@ -57,9 +54,8 @@ String GodotSteamUser::getUserDataFolder() {
 }
 
 void GodotSteamUser::advertiseGame(const String &server_ip, int port) {
-  if (!isSteamUserReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamUserReady());
+
   // Resolve address and convert it from IP_Address struct to uint32_t
   IP_Address addr;
   if (server_ip.is_valid_ip_address()) {
@@ -87,9 +83,8 @@ void GodotSteamUser::advertiseGame(const String &server_ip, int port) {
 // series will be 1 The user has can have two different badges for a series; the
 // regular (max level 5) and the foil (max level 1)
 int GodotSteamUser::getGameBadgeLevel(int series, bool foil) {
-  if (!isSteamUserReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamUserReady(), 0);
+
   return SteamUser()->GetGameBadgeLevel(series, foil);
 }
 

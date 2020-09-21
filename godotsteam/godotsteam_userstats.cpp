@@ -63,9 +63,8 @@ bool GodotSteamUserstats::requestCurrentStats() {
 }
 
 bool GodotSteamUserstats::setAchievement(const String &s_key) {
-  if (!isSteamUserstatsReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamUserstatsReady(), false);
+
   SteamUserStats()->SetAchievement(s_key.utf8().get_data());
   return SteamUserStats()->StoreStats();
 }
@@ -79,9 +78,8 @@ bool GodotSteamUserstats::setStatInt(const String &s_key, int value) {
 }
 
 bool GodotSteamUserstats::storeStats() {
-  if (!isSteamUserstatsReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamUserstatsReady(), false);
+
   SteamUserStats()->StoreStats();
   return SteamUserStats()->RequestCurrentStats();
 }
@@ -103,6 +101,7 @@ void GodotSteamUserstats::OnFindLeaderboard(
     LeaderboardFindResult_t *pFindLeaderboardResult, bool bIOFailure) {
   if (!pFindLeaderboardResult->m_bLeaderboardFound || bIOFailure) {
     emit_signal("leaderboard_load_failed", "Leaderboard not found");
+
   } else {
     setLeaderboardHandle(pFindLeaderboardResult->m_hSteamLeaderboard);
 
@@ -113,17 +112,14 @@ void GodotSteamUserstats::OnFindLeaderboard(
 }
 
 String GodotSteamUserstats::getLeaderboardName() {
-  if (!isSteamUserstatsReady()) {
-    return "";
-  }
+  STEAM_FAIL_COND_V(!isSteamUserstatsReady(), "");
 
   return SteamUserStats()->GetLeaderboardName(leaderboardHandle);
 }
 
 int GodotSteamUserstats::getLeaderboardEntryCount() {
-  if (!isSteamUserstatsReady()) {
-    return -1;
-  }
+  STEAM_FAIL_COND_V(!isSteamUserstatsReady(), -1);
+
   return SteamUserStats()->GetLeaderboardEntryCount(leaderboardHandle);
 }
 
@@ -199,9 +195,7 @@ void GodotSteamUserstats::OnLeaderboardEntriesLoaded(
 
 void GodotSteamUserstats::getDownloadedLeaderboardEntry(
     SteamLeaderboardEntries_t eHandle, int entryCount) {
-  if (!isSteamUserstatsReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamUserstatsReady());
 
   leaderboard_entries.clear();
   for (int index = 0; index < entryCount; index++) {
@@ -234,9 +228,8 @@ Array GodotSteamUserstats::getLeaderboardEntries() {
 bool GodotSteamUserstats::getAchievementAndUnlockTime(const String &name,
                                                       bool achieved,
                                                       int unlockTime) {
-  if (!isSteamUserstatsReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamUserstatsReady(), 0);
+
   return SteamUserStats()->GetAchievementAndUnlockTime(
       name.utf8().get_data(), (bool *)achieved, (uint32_t *)unlockTime);
 }
@@ -244,9 +237,8 @@ bool GodotSteamUserstats::getAchievementAndUnlockTime(const String &name,
 bool GodotSteamUserstats::indicateAchievementProgress(const String &name,
                                                       int curProgress,
                                                       int maxProgress) {
-  if (!isSteamUserstatsReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamUserstatsReady(), 0);
+
   return SteamUserStats()->IndicateAchievementProgress(
       name.utf8().get_data(), curProgress, maxProgress);
 }

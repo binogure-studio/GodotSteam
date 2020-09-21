@@ -7,6 +7,7 @@
 #include "core/io/ip.h"
 #include "core/io/ip_address.h"
 #include "dictionary.h"
+#include "godotsteam_utils.h"
 #include "object.h"
 #include "reference.h"
 #include "scene/resources/texture.h"

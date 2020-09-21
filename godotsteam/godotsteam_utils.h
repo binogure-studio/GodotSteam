@@ -4,7 +4,22 @@
 #include <inttypes.h>
 #include <steam/steam_api.h>
 
+#include "godotsteam_utils.h"
 #include "object.h"
+
+#define STEAM_FAIL_COND(m_cond) \
+  {                             \
+    if (m_cond) {               \
+      return;                   \
+    }                           \
+  }
+
+#define STEAM_FAIL_COND_V(m_cond, m_retval) \
+  {                                         \
+    if (m_cond) {                           \
+      return m_retval;                      \
+    }                                       \
+  }
 
 class GodotSteamUtils : public Object {
 public:

@@ -22,22 +22,18 @@ void GodotSteamFriends::reset_singleton() {
 bool GodotSteamFriends::isSteamFriendsReady() { return SteamFriends() != NULL; }
 
 int GodotSteamFriends::getFriendCount() {
-  if (!isSteamFriendsReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamFriendsReady(), 0);
 
   return SteamFriends()->GetFriendCount(0x04);
 }
 
 String GodotSteamFriends::getPersonaName() {
-  if (!isSteamFriendsReady()) {
-    return "";
-  }
+  STEAM_FAIL_COND_V(!isSteamFriendsReady(), "");
 
   return SteamFriends()->GetPersonaName();
 }
 
-String GodotSteamFriends::getFriendPersonaName(int steamID) {
+String GodotSteamFriends::getFriendPersonaName(uint64_t steamID) {
   String personaName = "";
 
   if (isSteamFriendsReady() && steamID > 0) {
@@ -59,45 +55,35 @@ void GodotSteamFriends::setGameInfo(const String &s_key,
   // Each user has a set of key/value pairs, up to 20 can be set
   // Two magic keys (status, connect)
   // setGameInfo() to an empty string deletes the key
-  if (!isSteamFriendsReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamFriendsReady());
 
   SteamFriends()->SetRichPresence(s_key.utf8().get_data(),
                                   s_value.utf8().get_data());
 }
 
 void GodotSteamFriends::clearGameInfo() {
-  if (!isSteamFriendsReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamFriendsReady());
 
   SteamFriends()->ClearRichPresence();
 }
 
-void GodotSteamFriends::inviteFriend(int steamID, const String &conString) {
-  if (!isSteamFriendsReady()) {
-    return;
-  }
+void GodotSteamFriends::inviteFriend(uint64_t steamID, const String &conString) {
+  STEAM_FAIL_COND(!isSteamFriendsReady());
 
   CSteamID friendID = GodotSteamUtils::get_singleton()->createSteamID(steamID);
 
   SteamFriends()->InviteUserToGame(friendID, conString.utf8().get_data());
 }
 
-void GodotSteamFriends::setPlayedWith(int steamID) {
-  if (!isSteamFriendsReady()) {
-    return;
-  }
+void GodotSteamFriends::setPlayedWith(uint64_t steamID) {
+  STEAM_FAIL_COND(!isSteamFriendsReady());
 
   CSteamID friendID = GodotSteamUtils::get_singleton()->createSteamID(steamID);
   SteamFriends()->SetPlayedWith(friendID);
 }
 
 Array GodotSteamFriends::getRecentPlayers() {
-  if (!isSteamFriendsReady()) {
-    return Array();
-  }
+  STEAM_FAIL_COND_V(!isSteamFriendsReady(), Array());
 
   int rCount = SteamFriends()->GetCoplayFriendCount();
   Array recents;
@@ -122,10 +108,8 @@ Array GodotSteamFriends::getRecentPlayers() {
   return recents;
 }
 
-void GodotSteamFriends::getFriendAvatar(int size, int steam_id) {
-  if (size < AVATAR_SMALL || size > AVATAR_LARGE || !isSteamFriendsReady()) {
-    return;
-  }
+void GodotSteamFriends::getFriendAvatar(int size, uint64_t steam_id) {
+  STEAM_FAIL_COND(size < AVATAR_SMALL || size > AVATAR_LARGE || !isSteamFriendsReady());
 
   if (steam_id == 0) {
     steam_id = SteamUser()->GetSteamID().ConvertToUint64();
@@ -185,6 +169,7 @@ void GodotSteamFriends::_avatar_loaded(AvatarImageLoaded_t *avatarData) {
     return;
   }
   int rSize;
+
   if (size == 32) {
     rSize = AVATAR_SMALL;
   } else if (size == 64) {
@@ -195,12 +180,14 @@ void GodotSteamFriends::_avatar_loaded(AvatarImageLoaded_t *avatarData) {
     printf("[Steam] Invalid avatar size from callback\n");
     return;
   }
+
   Image avatar = drawAvatar(size, iBuffer);
   call_deferred("emit_signal", "avatar_loaded", rSize, (uint32_t) avatarData->m_steamID.ConvertToUint64(), avatar);
 }
 
 // Draw the given avatar
 Image GodotSteamFriends::drawAvatar(int iSize, uint8 *iBuffer) {
+
   // Apply buffer to Image
   Image avatar(iSize, iSize, false, Image::FORMAT_RGBA);
   for (int y = 0; y < iSize; y++) {
@@ -220,18 +207,13 @@ Image GodotSteamFriends::drawAvatar(int iSize, uint8 *iBuffer) {
 }
 
 void GodotSteamFriends::activateGameOverlay(const String &url) {
-  if (!isSteamFriendsReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamFriendsReady());
 
   SteamFriends()->ActivateGameOverlay(url.utf8().get_data());
 }
 
-void GodotSteamFriends::activateGameOverlayToUser(const String &url,
-                                                  int steamID) {
-  if (!isSteamFriendsReady()) {
-    return;
-  }
+void GodotSteamFriends::activateGameOverlayToUser(const String &url, uint64_t steamID) {
+  STEAM_FAIL_COND(!isSteamFriendsReady());
 
   CSteamID overlayUserID =
       GodotSteamUtils::get_singleton()->createSteamID(steamID);
@@ -240,27 +222,26 @@ void GodotSteamFriends::activateGameOverlayToUser(const String &url,
 }
 
 void GodotSteamFriends::activateGameOverlayToWebPage(const String &url) {
-  if (!isSteamFriendsReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamFriendsReady());
+
   SteamFriends()->ActivateGameOverlayToWebPage(url.utf8().get_data());
 }
 
-void GodotSteamFriends::activateGameOverlayToStore(int app_id) {
-  if (!isSteamFriendsReady()) {
-    return;
-  }
+void GodotSteamFriends::activateGameOverlayToStore(AppId_t app_id) {
+  STEAM_FAIL_COND(!isSteamFriendsReady());
+
   SteamFriends()->ActivateGameOverlayToStore(AppId_t(app_id),
                                              EOverlayToStoreFlag(0));
 }
 
 Array GodotSteamFriends::getUserSteamGroups() {
-  if (!isSteamFriendsReady()) {
-    return Array();
-  }
+  STEAM_FAIL_COND_V(!isSteamFriendsReady(), Array());
+
   int groupCount = SteamFriends()->GetClanCount();
   Array steamGroups;
+
   for (int index = 0; index < groupCount; index++) {
+
     Dictionary groups;
     CSteamID groupID = SteamFriends()->GetClanByIndex(index);
     String gName = SteamFriends()->GetClanName(groupID);
@@ -270,15 +251,16 @@ Array GodotSteamFriends::getUserSteamGroups() {
     groups["tag"] = gTag;
     steamGroups.append(groups);
   }
+
   return steamGroups;
 }
 
 Array GodotSteamFriends::getUserSteamFriends() {
-  if (!isSteamFriendsReady()) {
-    return Array();
-  }
+  STEAM_FAIL_COND_V(!isSteamFriendsReady(), Array());
+
   int fCount = SteamFriends()->GetFriendCount(0x04);
   Array steamFriends;
+
   for (int index = 0; index < fCount; index++) {
     Dictionary friends;
     CSteamID friendID = SteamFriends()->GetFriendByIndex(index, 0x04);
@@ -289,13 +271,13 @@ Array GodotSteamFriends::getUserSteamFriends() {
     friends["status"] = fStatus;
     steamFriends.append(friends);
   }
+
   return steamFriends;
 }
 
-void GodotSteamFriends::activateGameOverlayInviteDialog(int steamID) {
-  if (!isSteamFriendsReady()) {
-    return;
-  }
+void GodotSteamFriends::activateGameOverlayInviteDialog(uint64_t steamID) {
+  STEAM_FAIL_COND(!isSteamFriendsReady());
+
   CSteamID lobbyID = GodotSteamUtils::get_singleton()->createSteamID(steamID);
   SteamFriends()->ActivateGameOverlayInviteDialog(lobbyID);
 }

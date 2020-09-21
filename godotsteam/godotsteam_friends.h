@@ -32,20 +32,20 @@ public:
   Image drawAvatar(int size, uint8 *buffer);
   int getFriendCount();
   String getPersonaName();
-  String getFriendPersonaName(int steam_id);
+  String getFriendPersonaName(uint64_t steam_id);
   void setGameInfo(const String &s_key, const String &s_value);
   void clearGameInfo();
-  void inviteFriend(int id, const String &conString);
-  void setPlayedWith(int steam_id);
+  void inviteFriend(uint64_t id, const String &conString);
+  void setPlayedWith(uint64_t steam_id);
   Array getRecentPlayers();
-  void getFriendAvatar(int size = AVATAR_MEDIUM, int steam_id = 0);
+  void getFriendAvatar(int size = AVATAR_MEDIUM, uint64_t steam_id = 0);
   Array getUserSteamGroups();
   Array getUserSteamFriends();
   void activateGameOverlay(const String &type);
-  void activateGameOverlayToUser(const String &type, int steam_id);
+  void activateGameOverlayToUser(const String &type, uint64_t steam_id);
   void activateGameOverlayToWebPage(const String &url);
-  void activateGameOverlayToStore(int appid = 0);
-  void activateGameOverlayInviteDialog(int id);
+  void activateGameOverlayToStore(AppId_t appid = 0);
+  void activateGameOverlayInviteDialog(uint64_t steam_id);
 
 protected:
   static void _bind_methods();

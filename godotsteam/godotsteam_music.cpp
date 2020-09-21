@@ -22,58 +22,50 @@ void GodotSteamMusic::reset_singleton() {
 bool GodotSteamMusic::isSteamMusicReady() { return SteamMusic() != NULL; }
 
 bool GodotSteamMusic::musicIsEnabled() {
-  if (!isSteamMusicReady()) {
-    return false;
-  }
+  STEAM_FAIL_COND_V(!isSteamMusicReady(), false);
+
   return SteamMusic()->BIsEnabled();
 }
 
 bool GodotSteamMusic::musicIsPlaying() {
-  if (!isSteamMusicReady()) {
-    return false;
-  }
+  STEAM_FAIL_COND_V(!isSteamMusicReady(), false);
+
   return SteamMusic()->BIsPlaying();
 }
 
 float GodotSteamMusic::musicGetVolume() {
-  if (!isSteamMusicReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamMusicReady(), 0);
+
   return SteamMusic()->GetVolume();
 }
 
 void GodotSteamMusic::musicPause() {
-  if (!isSteamMusicReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamMusicReady());
+
   return SteamMusic()->Pause();
 }
 
 void GodotSteamMusic::musicPlay() {
-  if (!isSteamMusicReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamMusicReady());
+
   return SteamMusic()->Play();
 }
 
 void GodotSteamMusic::musicPlayNext() {
-  if (!isSteamMusicReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamMusicReady());
+
   return SteamMusic()->PlayNext();
 }
 
 void GodotSteamMusic::musicPlayPrev() {
-  if (!isSteamMusicReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamMusicReady());
+
   return SteamMusic()->PlayPrevious();
 }
 
 void GodotSteamMusic::musicSetVolume(float value) {
-  if (!isSteamMusicReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamMusicReady());
+
   return SteamMusic()->SetVolume(value);
 }
 void GodotSteamMusic::_bind_methods() {

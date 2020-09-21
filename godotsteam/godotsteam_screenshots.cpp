@@ -23,9 +23,8 @@ void GodotSteamScreenshots::reset_singleton() {
 bool GodotSteamScreenshots::isSteamScreenshotsReady() { return SteamScreenshots() != NULL; }
 
 void GodotSteamScreenshots::triggerScreenshot() {
-  if (!isSteamScreenshotsReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamScreenshotsReady());
+
   SteamScreenshots()->TriggerScreenshot();
 }
 

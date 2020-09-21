@@ -23,17 +23,14 @@ bool GodotSteamMatchmaking::isSteamMatchmakingReady() {
 }
 
 void GodotSteamMatchmaking::createLobby(int lobbyType, int cMaxMembers) {
-  if (!isSteamMatchmakingReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamMatchmakingReady());
 
   SteamMatchmaking()->CreateLobby((ELobbyType) lobbyType, cMaxMembers);
 }
 // Join an existing lobby
 void GodotSteamMatchmaking::joinLobby(int steamIDLobby) {
-  if (!isSteamMatchmakingReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamMatchmakingReady());
+
   CSteamID lobbyID = GodotSteamUtils::get_singleton()->createSteamID(steamIDLobby);
   SteamMatchmaking()->JoinLobby(lobbyID);
 }
@@ -47,9 +44,8 @@ void GodotSteamMatchmaking::leaveLobby(int steamIDLobby) {
 // LobbyInvite_t callback, will return true if the invite is successfully sent,
 // whether or not the target responds
 bool GodotSteamMatchmaking::inviteUserToLobby(int steamIDLobby, int steamIDInvitee) {
-  if (!isSteamMatchmakingReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamMatchmakingReady(), false);
+
   CSteamID lobbyID = GodotSteamUtils::get_singleton()->createSteamID(steamIDLobby);
   CSteamID inviteeID = GodotSteamUtils::get_singleton()->createSteamID(steamIDInvitee);
   return SteamMatchmaking()->InviteUserToLobby(lobbyID, inviteeID);
@@ -58,8 +54,8 @@ bool GodotSteamMatchmaking::inviteUserToLobby(int steamIDLobby, int steamIDInvit
 // Signal the lobby has been created
 void GodotSteamMatchmaking::_lobby_created(LobbyCreated_t *lobbyData) {
   int connect = (int)lobbyData->m_eResult;
-
   int lobbyID = (uint64)lobbyData->m_ulSteamIDLobby;
+
   emit_signal("lobby_created", connect, lobbyID);
 }
 // Signal that lobby has been joined
@@ -68,6 +64,7 @@ void GodotSteamMatchmaking::_lobby_joined(LobbyEnter_t *lobbyData) {
   uint32 permissions = lobbyData->m_rgfChatPermissions;
   bool locked = lobbyData->m_bLocked;
   uint32 response = lobbyData->m_EChatRoomEnterResponse;
+
   emit_signal("lobby_joined", lobbyID, permissions, locked, response);
 }
 // Signal that a lobby invite was sent
@@ -75,12 +72,14 @@ void GodotSteamMatchmaking::_lobby_invite(LobbyInvite_t *lobbyData) {
   int inviterID = (uint64)lobbyData->m_ulSteamIDUser;
   int lobbyID = (uint64)lobbyData->m_ulSteamIDLobby;
   int gameID = (uint64)lobbyData->m_ulGameID;
+
   emit_signal("lobby_invite", inviterID, lobbyID, gameID);
 }
 // Signal a game/lobby join has been requested
 void GodotSteamMatchmaking::_join_requested(GameRichPresenceJoinRequested_t *callData) {
   int steamID = callData->m_steamIDFriend.GetAccountID();
   String con_string = callData->m_rgchConnect;
+
   emit_signal("join_requested", steamID, con_string);
 }
 

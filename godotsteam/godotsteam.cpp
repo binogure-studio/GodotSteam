@@ -53,84 +53,74 @@ int GodotSteam::steamInit(uint32 appID, bool force) {
 }
 
 bool GodotSteam::hasOtherApp(int value) {
-  if (!isSteamAppReady()) {
-    return false;
-  }
+  STEAM_FAIL_COND_V(!isSteamAppReady(), false);
+
   return SteamApps()->BIsSubscribedApp((AppId_t)value);
 }
 
 int GodotSteam::getDLCCount() {
-  if (!isSteamAppReady()) {
-    return false;
-  }
+  STEAM_FAIL_COND_V(!isSteamAppReady(), false);
+
   return SteamApps()->GetDLCCount();
 }
 
 bool GodotSteam::isDLCInstalled(int value) {
-  if (!isSteamAppReady()) {
-    return false;
-  }
+  STEAM_FAIL_COND_V(!isSteamAppReady(), false);
+
   return SteamApps()->BIsDlcInstalled(value);
 }
 
 void GodotSteam::requestAppProofOfPurchaseKey(int value) {
-  if (!isSteamAppReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamAppReady());
+
   SteamApps()->RequestAppProofOfPurchaseKey(value);
 }
 
 bool GodotSteam::isAppInstalled(int value) {
-  if (!isSteamAppReady()) {
-    return false;
-  }
+  STEAM_FAIL_COND_V(!isSteamAppReady(), false);
+
   return SteamApps()->BIsAppInstalled((AppId_t)value);
 }
 
 String GodotSteam::getCurrentGameLanguage() {
-  if (!isSteamAppReady()) {
-    return "None";
-  }
+  STEAM_FAIL_COND_V(!isSteamAppReady(), "None");
+
   return SteamApps()->GetCurrentGameLanguage();
 }
 
 bool GodotSteam::isVACBanned() {
-  if (!isSteamAppReady()) {
-    return false;
-  }
+  STEAM_FAIL_COND_V(!isSteamAppReady(), false);
+
   return SteamApps()->BIsVACBanned();
 }
 
 int GodotSteam::getEarliestPurchaseUnixTime(int value) {
-  if (!isSteamAppReady()) {
-    return 0;
-  }
+  STEAM_FAIL_COND_V(!isSteamAppReady(), 0);
+
   return SteamApps()->GetEarliestPurchaseUnixTime((AppId_t)value);
 }
 
 bool GodotSteam::isSubscribedFromFreeWeekend() {
-  if (!isSteamAppReady()) {
-    return false;
-  }
+  STEAM_FAIL_COND_V(!isSteamAppReady(), false);
+
   return SteamApps()->BIsSubscribedFromFreeWeekend();
 }
 
 void GodotSteam::installDLC(int value) {
-  if (!isSteamAppReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamAppReady());
+
   SteamApps()->InstallDLC((AppId_t)value);
 }
 void GodotSteam::uninstallDLC(int value) {
-  if (!isSteamAppReady()) {
-    return;
-  }
+  STEAM_FAIL_COND(!isSteamAppReady());
+
   SteamApps()->UninstallDLC((AppId_t)value);
 }
 
 void GodotSteam::_overlay_toggled(GameOverlayActivated_t *callData) {
   if (callData->m_bActive) {
     emit_signal("overlay_toggled", true);
+
   } else {
     emit_signal("overlay_toggled", false);
   }
