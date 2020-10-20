@@ -4,10 +4,10 @@
 #include <inttypes.h>
 #include <steam/steam_api.h>
 
-#include "object.h"
+#include "core/object.h"
 #include "scene/resources/texture.h"
-#include "reference.h"
-#include "dictionary.h"
+#include "core/reference.h"
+#include "core/dictionary.h"
 
 // Local dependencies
 #include "godotsteam_utils.h"

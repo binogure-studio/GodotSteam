@@ -24,12 +24,10 @@ bool GodotSteamWorkshop::isSteamUGCReady() { return SteamUGC() != NULL; }
 
 // Adds a dependency between the given item and the appid. This list of dependencies can be retrieved by calling GetAppDependencies.
 // This is a soft-dependency that is displayed on the web. It is up to the application to determine whether the item can actually be used or not.
-void GodotSteamWorkshop::addAppDependency(uint64_t publishedFileID, uint64_t appID) {
+void GodotSteamWorkshop::addAppDependency(uint64_t publishedFileID, uint32 appID) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  PublishedFileId_t fileID = (uint64_t)publishedFileID;
-  AppId_t app = (uint32_t)appID;
-  SteamAPICall_t apiCall = SteamUGC()->AddAppDependency(fileID, app);
+  SteamAPICall_t apiCall = SteamUGC()->AddAppDependency((PublishedFileId_t)publishedFileID, (AppId_t)appID);
   callResultAddAppDependency.Set(apiCall, this, &GodotSteamWorkshop::_add_app_dependency_result);
 }
 
@@ -38,34 +36,29 @@ void GodotSteamWorkshop::addAppDependency(uint64_t publishedFileID, uint64_t app
 void GodotSteamWorkshop::addDependency(uint64_t publishedFileID, uint64_t childPublishedFileID) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  PublishedFileId_t parent = (uint64_t)publishedFileID;
-  PublishedFileId_t child = (uint64_t)childPublishedFileID;
-  SteamAPICall_t apiCall = SteamUGC()->AddDependency(parent, child);
+  SteamAPICall_t apiCall = SteamUGC()->AddDependency((PublishedFileId_t)publishedFileID, (PublishedFileId_t)childPublishedFileID);
   callResultAddUGCDependency.Set(apiCall, this, &GodotSteamWorkshop::_add_ugc_dependency_result);
 }
 
 // Adds a excluded tag to a pending UGC Query. This will only return UGC without the specified tag.
-bool GodotSteamWorkshop::addExcludedTag(int queryHandle, const String& tagName) {
+bool GodotSteamWorkshop::addExcludedTag(uint64_t queryHandle, const String& tagName) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  return SteamUGC()->AddExcludedTag(handle, tagName.utf8().get_data());
+  return SteamUGC()->AddExcludedTag((UGCQueryHandle_t)queryHandle, tagName.utf8().get_data());
 }
 
 // Adds a key-value tag pair to an item. Keys can map to multiple different values (1-to-many relationship).
-bool GodotSteamWorkshop::addItemKeyValueTag(int updateHandle, const String& key, const String& value) {
+bool GodotSteamWorkshop::addItemKeyValueTag(uint64_t updateHandle, const String& key, const String& value) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCUpdateHandle_t handle = (uint64_t)updateHandle;
-  return SteamUGC()->AddItemKeyValueTag(handle, key.utf8().get_data(), value.utf8().get_data());
+  return SteamUGC()->AddItemKeyValueTag((UGCUpdateHandle_t)updateHandle, key.utf8().get_data(), value.utf8().get_data());
 }
 
 // Adds an additional preview file for the item.
-bool GodotSteamWorkshop::addItemPreviewFile(int queryHandle, const String& previewFile, int type) {
+bool GodotSteamWorkshop::addItemPreviewFile(uint64_t queryHandle, const String& previewFile, int type) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
   EItemPreviewType previewType = k_EItemPreviewType_ReservedMax;
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
 
   switch ((EItemPreviewType)type) {
     case k_EItemPreviewType_YouTubeVideo:
@@ -82,56 +75,50 @@ bool GodotSteamWorkshop::addItemPreviewFile(int queryHandle, const String& previ
     break;
   }
 
-  return SteamUGC()->AddItemPreviewFile(handle, previewFile.utf8().get_data(), previewType);
+  return SteamUGC()->AddItemPreviewFile((UGCQueryHandle_t)queryHandle, previewFile.utf8().get_data(), previewType);
 }
 
 // Adds an additional video preview from YouTube for the item.
-bool GodotSteamWorkshop::addItemPreviewVideo(int queryHandle, const String& videoID) {
+bool GodotSteamWorkshop::addItemPreviewVideo(uint64_t queryHandle, const String& videoID) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  return SteamUGC()->AddItemPreviewVideo(handle, videoID.utf8().get_data());
+  return SteamUGC()->AddItemPreviewVideo((UGCQueryHandle_t)queryHandle, videoID.utf8().get_data());
 }
 
 // Adds a workshop item to the users favorites list.
-void GodotSteamWorkshop::addItemToFavorite(AppId_t appID, uint64_t publishedFileID) {
+void GodotSteamWorkshop::addItemToFavorite(uint32 appID, uint64_t publishedFileID) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  PublishedFileId_t fileID = (uint64_t)publishedFileID;
-  SteamAPICall_t apiCall = SteamUGC()->AddItemToFavorites(appID, fileID);
+  SteamAPICall_t apiCall = SteamUGC()->AddItemToFavorites((AppId_t)appID, (PublishedFileId_t)publishedFileID);
   callResultFavoriteItemListChanged.Set(apiCall, this, &GodotSteamWorkshop::_user_favorite_items_list_changed);
 }
 
 // Adds a required key-value tag to a pending UGC Query. This will only return workshop items that have a key = pKey and a value = pValue.
-bool GodotSteamWorkshop::addRequiredKeyValueTag(int queryHandle, const String& key, const String& value) {
+bool GodotSteamWorkshop::addRequiredKeyValueTag(uint64_t queryHandle, const String& key, const String& value) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  return SteamUGC()->AddRequiredKeyValueTag(handle, key.utf8().get_data(), value.utf8().get_data());
+  return SteamUGC()->AddRequiredKeyValueTag((UGCQueryHandle_t)queryHandle, key.utf8().get_data(), value.utf8().get_data());
 }
 
 // Adds a required tag to a pending UGC Query. This will only return UGC with the specified tag.
-bool GodotSteamWorkshop::addRequiredTag(int queryHandle, const String& tagName) {
+bool GodotSteamWorkshop::addRequiredTag(uint64_t queryHandle, const String& tagName) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  return SteamUGC()->AddRequiredTag(handle, tagName.utf8().get_data());
+  return SteamUGC()->AddRequiredTag((UGCQueryHandle_t)queryHandle, tagName.utf8().get_data());
 }
 
-// Lets game servers set a specific workshop folder before issuing any UGC commands.
-bool GodotSteamWorkshop::initWorkshopForGameServer(int workshopDepotID) {
-  STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
+void GodotSteamWorkshop::commitItemUpdate(uint64_t updateHandle, const String& note) {
+  STEAM_FAIL_COND(!isSteamUGCReady());
 
-  DepotId_t workshop = (uint32_t)workshopDepotID;
-  const char *folder = new char[QUERY_MAX_LENGTH];
-  return SteamUGC()->BInitWorkshopForGameServer(workshop, (char*)folder);
+  SteamAPICall_t submit_item_call = SteamUGC()->SubmitItemUpdate((UGCUpdateHandle_t)updateHandle, note.utf8().get_data());
+  callResultItemUpdate.Set(submit_item_call, this, &GodotSteamWorkshop::_item_updated);
 }
 
 // Creates a new workshop item with no content attached yet.
-void GodotSteamWorkshop::createItem(AppId_t appID, int fileType) {
+void GodotSteamWorkshop::createItem(uint32 appID, int fileType) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  SteamAPICall_t apiCall = SteamUGC()->CreateItem(appID, (EWorkshopFileType)fileType);
+  SteamAPICall_t apiCall = SteamUGC()->CreateItem((AppId_t)appID, (EWorkshopFileType)fileType);
   callResultCreateItem.Set(apiCall, this, &GodotSteamWorkshop::_item_created);
 }
 
@@ -185,6 +172,9 @@ void GodotSteamWorkshop::createQueryAllUGCRequest(int queryType, int matchingTyp
   }
 
   UGCQueryHandle_t handle = SteamUGC()->CreateQueryAllUGCRequest(query, match, creatorID, creatorID, page);
+
+  SteamUGC()->SetReturnMetadata(handle, true);
+
   SteamAPICall_t apiCall = SteamUGC()->SendQueryUGCRequest(handle);
 
   callResultUGCQueryCompleted.Set(apiCall, this, &GodotSteamWorkshop::_ugc_query_completed);
@@ -209,6 +199,9 @@ void GodotSteamWorkshop::createQueryUserUGCRequest(AccountID_t accountID, int li
   }
 
   UGCQueryHandle_t handle = SteamUGC()->CreateQueryUserUGCRequest(accountID, list, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_LastUpdatedDesc, creatorID, creatorID, page);
+
+  SteamUGC()->SetReturnMetadata(handle, true);
+
   SteamAPICall_t apiCall = SteamUGC()->SendQueryUGCRequest(handle);
 
   callResultUGCQueryCompleted.Set(apiCall, this, &GodotSteamWorkshop::_ugc_query_completed);
@@ -230,6 +223,9 @@ void GodotSteamWorkshop::createQueryUGCDetailsRequest(Array publishedFileIDs) {
   }
 
   UGCQueryHandle_t handle = SteamUGC()->CreateQueryUGCDetailsRequest(fileIDs, fileCount);
+
+  SteamUGC()->SetReturnMetadata(handle, true);
+
   SteamAPICall_t apiCall = SteamUGC()->SendQueryUGCRequest(handle);
 
   callResultUGCQueryCompleted.Set(apiCall, this, &GodotSteamWorkshop::_ugc_query_completed);
@@ -238,8 +234,7 @@ void GodotSteamWorkshop::createQueryUGCDetailsRequest(Array publishedFileIDs) {
 void GodotSteamWorkshop::deleteItem(uint64_t publishedFileID) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  PublishedFileId_t fileID = (uint64_t)publishedFileID;
-  SteamAPICall_t apiCall = SteamUGC()->DeleteItem(fileID);
+  SteamAPICall_t apiCall = SteamUGC()->DeleteItem((PublishedFileId_t)publishedFileID);
   callResultDeleteItem.Set(apiCall, this, &GodotSteamWorkshop::_item_deleted);
 }
 
@@ -251,8 +246,7 @@ void GodotSteamWorkshop::deleteItem(uint64_t publishedFileID) {
 bool GodotSteamWorkshop::downloadItem(uint64_t publishedFileID, bool bHighPriority) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  PublishedFileId_t fileID = (int)publishedFileID;
-  return SteamUGC()->DownloadItem(fileID, bHighPriority);
+  return SteamUGC()->DownloadItem((PublishedFileId_t)publishedFileID, bHighPriority);
 }
 
 // Get info about a pending download of a workshop item that has k_EItemStateNeedsUpdate set.
@@ -281,11 +275,10 @@ Dictionary GodotSteamWorkshop::getItemInstallInfo(uint64_t publishedFileID) {
 
   STEAM_FAIL_COND_V(!isSteamUGCReady(), info);
 
-  PublishedFileId_t fileID = (int)publishedFileID;
   uint64 sizeOnDisk;
   char folder[1024] = { 0 };
   uint32 timeStamp;
-  info["ret"] = SteamUGC()->GetItemInstallInfo((PublishedFileId_t)fileID, &sizeOnDisk, folder, sizeof(folder), &timeStamp);
+  info["ret"] = SteamUGC()->GetItemInstallInfo((PublishedFileId_t)publishedFileID, &sizeOnDisk, folder, sizeof(folder), &timeStamp);
 
   if (info["ret"]) {
     info["size"] = (int)sizeOnDisk;
@@ -299,20 +292,18 @@ Dictionary GodotSteamWorkshop::getItemInstallInfo(uint64_t publishedFileID) {
 int GodotSteamWorkshop::getItemState(uint64_t publishedFileID) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), 0);
 
-  PublishedFileId_t fileID = (int)publishedFileID;
-  return SteamUGC()->GetItemState(fileID);
+  return SteamUGC()->GetItemState((PublishedFileId_t)publishedFileID);
 }
 
-Dictionary GodotSteamWorkshop::getItemUpdateProgress(int updateHandle) {
+Dictionary GodotSteamWorkshop::getItemUpdateProgress(uint64_t updateHandle) {
   Dictionary updateProgress;
 
   STEAM_FAIL_COND_V(!isSteamUGCReady(), updateProgress);
 
-  UGCUpdateHandle_t handle = (uint64_t)updateHandle;
   uint64 processed = 0;
   uint64 total = 0;
 
-  EItemUpdateStatus status = SteamUGC()->GetItemUpdateProgress(handle, &processed, &total);
+  EItemUpdateStatus status = SteamUGC()->GetItemUpdateProgress((UGCUpdateHandle_t)updateHandle, &processed, &total);
   updateProgress["status"] = status;
   updateProgress["processed"] = uint64_t(processed);
   updateProgress["total"] = uint64_t(total);
@@ -327,20 +318,19 @@ int GodotSteamWorkshop::getNumSubscribedItems() {
 }
 
 // Retrieve the details of an additional preview associated with an individual workshop item after receiving a querying UGC call result.
-Dictionary GodotSteamWorkshop::getQueryUGCAdditionalPreview(int queryHandle, int index, int previewIndex) {
+Dictionary GodotSteamWorkshop::getQueryUGCAdditionalPreview(uint64_t queryHandle, int index, int previewIndex) {
   Dictionary preview;
 
   STEAM_FAIL_COND_V(!isSteamUGCReady(), preview);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  char *urlOrVideoID = new char[QUERY_MAX_LENGTH];
-  char *originalFilename = new char[QUERY_MAX_LENGTH];
+  char *urlOrVideoID = new char[k_cchFilenameMax];
+  char *originalFilename = new char[k_cchFilenameMax];
   EItemPreviewType previewType;
-  bool success = SteamUGC()->GetQueryUGCAdditionalPreview(handle, index, previewIndex, (char*)urlOrVideoID, QUERY_MAX_LENGTH, (char*)originalFilename, QUERY_MAX_LENGTH, &previewType);
+  bool success = SteamUGC()->GetQueryUGCAdditionalPreview((UGCQueryHandle_t)queryHandle, index, previewIndex, (char*)urlOrVideoID, k_cchFilenameMax, (char*)originalFilename, k_cchFilenameMax, &previewType);
 
   if (success) {
     preview["success"] = success;
-    preview["handle"] = (uint64_t)handle;
+    preview["handle"] = queryHandle;
     preview["index"] = index;
     preview["preview"] = previewIndex;
     preview["urlOrVideo"] = urlOrVideoID;
@@ -352,18 +342,17 @@ Dictionary GodotSteamWorkshop::getQueryUGCAdditionalPreview(int queryHandle, int
 }
 
 // Retrieve the ids of any child items of an individual workshop item after receiving a querying UGC call result. These items can either be a part of a collection or some other dependency (see AddDependency).
-Dictionary GodotSteamWorkshop::getQueryUGCChildren(int queryHandle, int index) {
+Dictionary GodotSteamWorkshop::getQueryUGCChildren(uint64_t queryHandle, int index) {
   Dictionary children;
 
   STEAM_FAIL_COND_V(!isSteamUGCReady(), children);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
   PublishedFileId_t *child = new PublishedFileId_t[100];
-  bool success = SteamUGC()->GetQueryUGCChildren(handle, index, (PublishedFileId_t*)child, 100);
+  bool success = SteamUGC()->GetQueryUGCChildren((UGCQueryHandle_t)queryHandle, index, (PublishedFileId_t*)child, 100);
 
   if (success) {
     children["success"] = success;
-    children["handle"] = (uint64_t)handle;
+    children["handle"] = queryHandle;
     children["index"] = index;
     children["children"] = child;
   }
@@ -372,19 +361,18 @@ Dictionary GodotSteamWorkshop::getQueryUGCChildren(int queryHandle, int index) {
 }
 
 // Retrieve the details of a key-value tag associated with an individual workshop item after receiving a querying UGC call result.
-Dictionary GodotSteamWorkshop::getQueryUGCKeyValueTag(int queryHandle, int index, int keyValueTagIndex) {
+Dictionary GodotSteamWorkshop::getQueryUGCKeyValueTag(uint64_t queryHandle, int index, int keyValueTagIndex) {
   Dictionary tag;
 
   STEAM_FAIL_COND_V(!isSteamUGCReady(), tag);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  char *key = new char[QUERY_MAX_LENGTH];
-  char *value = new char[QUERY_MAX_LENGTH];
-  bool success = SteamUGC()->GetQueryUGCKeyValueTag(handle, index, keyValueTagIndex, (char*)key, QUERY_MAX_LENGTH, (char*)value, QUERY_MAX_LENGTH);
+  char *key = new char[k_cchFilenameMax];
+  char *value = new char[k_cchFilenameMax];
+  bool success = SteamUGC()->GetQueryUGCKeyValueTag((UGCQueryHandle_t)queryHandle, index, keyValueTagIndex, (char*)key, k_cchFilenameMax, (char*)value, k_cchFilenameMax);
 
   if (success) {
     tag["success"] = success;
-    tag["handle"] = (uint64_t)handle;
+    tag["handle"] = queryHandle;
     tag["index"] = index;
     tag["tag"] = keyValueTagIndex;
     tag["key"] = key;
@@ -394,56 +382,48 @@ Dictionary GodotSteamWorkshop::getQueryUGCKeyValueTag(int queryHandle, int index
   return tag;
 }
 // Retrieve the developer set metadata of an individual workshop item after receiving a querying UGC call result.
-String GodotSteamWorkshop::getQueryUGCMetadata(int queryHandle, int index) {
+String GodotSteamWorkshop::getQueryUGCMetadata(uint64_t queryHandle, int index) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), "");
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  char *metadata = new char[QUERY_MAX_LENGTH];
-  bool success = SteamUGC()->GetQueryUGCMetadata(handle, index, (char*)metadata, QUERY_MAX_LENGTH);
+  char *metadata = new char[k_cchDeveloperMetadataMax];
+  
+  STEAM_FAIL_COND_V(!SteamUGC()->GetQueryUGCMetadata((UGCQueryHandle_t)queryHandle, index, (char*)metadata, k_cchDeveloperMetadataMax), "Invalid metadata");
 
-  if (success) {
-    String ugcMetadata = metadata;
-    return ugcMetadata;
-  }
-
-  return "";
+  String ugcMetadata = metadata;
+  return ugcMetadata;
 }
 // Retrieve the number of additional previews of an individual workshop item after receiving a querying UGC call result.
-int GodotSteamWorkshop::getQueryUGCNumAdditionalPreviews(int queryHandle, int index) {
+int GodotSteamWorkshop::getQueryUGCNumAdditionalPreviews(uint64_t queryHandle, int index) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), -1);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  return SteamUGC()->GetQueryUGCNumAdditionalPreviews(handle, index);
+  return SteamUGC()->GetQueryUGCNumAdditionalPreviews((UGCQueryHandle_t)queryHandle, index);
 }
 // Retrieve the number of key-value tags of an individual workshop item after receiving a querying UGC call result.
-int GodotSteamWorkshop::getQueryUGCNumKeyValueTags(int queryHandle, int index) {
+int GodotSteamWorkshop::getQueryUGCNumKeyValueTags(uint64_t queryHandle, int index) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), -1);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  return SteamUGC()->GetQueryUGCNumKeyValueTags(handle, index);
+  return SteamUGC()->GetQueryUGCNumKeyValueTags((UGCQueryHandle_t)queryHandle, index);
 }
 // Retrieve the URL to the preview image of an individual workshop item after receiving a querying UGC call result.
-String GodotSteamWorkshop::getQueryUGCPreviewURL(int queryHandle, int index) {
+String GodotSteamWorkshop::getQueryUGCPreviewURL(uint64_t queryHandle, int index) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), "");
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  char *url = new char[QUERY_MAX_LENGTH];
+  char *url = new char[k_cchFilenameMax];
 
-  STEAM_FAIL_COND_V(!SteamUGC()->GetQueryUGCPreviewURL(handle, index, (char*)url, QUERY_MAX_LENGTH), "");
+  STEAM_FAIL_COND_V(!SteamUGC()->GetQueryUGCPreviewURL((UGCQueryHandle_t)queryHandle, index, (char*)url, k_cchFilenameMax), "Invalid preview");
 
   String previewURL = url;
   return previewURL;
 }
 // Retrieve the details of an individual workshop item after receiving a querying UGC call result.
-Dictionary GodotSteamWorkshop::getQueryUGCResult(int queryHandle, int index) {
+Dictionary GodotSteamWorkshop::getQueryUGCResult(uint64_t queryHandle, int index) {
   Dictionary ugcResult;
 
   STEAM_FAIL_COND_V(!isSteamUGCReady(), ugcResult);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
   SteamUGCDetails_t pDetails;
 
-  bool success = SteamUGC()->GetQueryUGCResult(handle, index, &pDetails);
+  bool success = SteamUGC()->GetQueryUGCResult((UGCQueryHandle_t)queryHandle, index, &pDetails);
 
   if (success) {
     ugcResult["result"] = (uint64_t)pDetails.m_eResult;
@@ -472,18 +452,19 @@ Dictionary GodotSteamWorkshop::getQueryUGCResult(int queryHandle, int index) {
     ugcResult["votesDown"] = pDetails.m_unVotesDown;
     ugcResult["score"] = pDetails.m_flScore;
     ugcResult["numChildren"] = pDetails.m_unNumChildren;
+    ugcResult["metadata"] = getQueryUGCMetadata(queryHandle, index);
+    ugcResult["previewFileURL"] = getQueryUGCPreviewURL(queryHandle, index);
   }
 
   return ugcResult;
 }
 
 // Retrieve various statistics of an individual workshop item after receiving a querying UGC call result.
-Dictionary GodotSteamWorkshop::getQueryUGCStatistic(int queryHandle, int index, int statType) {
+Dictionary GodotSteamWorkshop::getQueryUGCStatistic(uint64_t queryHandle, int index, int statType) {
   Dictionary ugcStat;
 
   STEAM_FAIL_COND_V(!isSteamUGCReady(), ugcStat);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
   EItemStatistic type = k_EItemStatistic_NumPlaytimeSessionsDuringTimePeriod;
 
   switch((EItemStatistic)statType) {
@@ -504,11 +485,11 @@ Dictionary GodotSteamWorkshop::getQueryUGCStatistic(int queryHandle, int index, 
   }
 
   uint64 value = 0;
-  bool success = SteamUGC()->GetQueryUGCStatistic(handle, index, type, &value);
+  bool success = SteamUGC()->GetQueryUGCStatistic((UGCQueryHandle_t)queryHandle, index, type, &value);
 
   if (success) {
     ugcStat["success"] = success;
-    ugcStat["handle"] = (uint64_t)handle;
+    ugcStat["handle"] = queryHandle;
     ugcStat["index"] = index;
     ugcStat["type"] = type;
     ugcStat["value"] = (uint64_t)value;
@@ -532,107 +513,101 @@ Array GodotSteamWorkshop::getSubscribedItems() {
   return subscribed;
 }
 
-bool GodotSteamWorkshop::releaseQueryUGCRequest(int queryHandle) {
+// Lets game servers set a specific workshop folder before issuing any UGC commands.
+bool GodotSteamWorkshop::initWorkshopForGameServer(DepotId_t workshopDepotID) {
+  STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
+
+  const char *folder = new char[k_cchFilenameMax];
+  return SteamUGC()->BInitWorkshopForGameServer(workshopDepotID, (char*)folder);
+}
+
+bool GodotSteamWorkshop::releaseQueryUGCRequest(uint64_t queryHandle) {
 
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
 
-  return SteamUGC()->ReleaseQueryUGCRequest(handle);
+  return SteamUGC()->ReleaseQueryUGCRequest((UGCQueryHandle_t)queryHandle);
 }
 
 // Removes the dependency between the given item and the appid. This list of dependencies can be retrieved by calling GetAppDependencies.
-void GodotSteamWorkshop::removeAppDependency(uint64_t publishedFileID, uint64_t appID) {
+void GodotSteamWorkshop::removeAppDependency(uint64_t publishedFileID, uint32 appID) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  PublishedFileId_t fileID = (uint64_t)publishedFileID;
-  AppId_t app = (uint32_t)appID;
-  SteamAPICall_t apiCall = SteamUGC()->RemoveAppDependency(fileID, app);
+  SteamAPICall_t apiCall = SteamUGC()->RemoveAppDependency((PublishedFileId_t)publishedFileID, (AppId_t)appID);
   callResultRemoveAppDependency.Set(apiCall, this, &GodotSteamWorkshop::_remove_app_dependency_result);
 }
 
 // Removes a workshop item as a dependency from the specified item.
-void GodotSteamWorkshop::removeDependency(uint64_t publishedFileID, int childPublishedFileID) {
+void GodotSteamWorkshop::removeDependency(uint64_t publishedFileID, uint64_t childPublishedFileID) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  PublishedFileId_t fileID = (uint64_t)publishedFileID;
-  PublishedFileId_t childID = (uint64_t)childPublishedFileID;
-  SteamAPICall_t apiCall = SteamUGC()->RemoveDependency(fileID, childID);
+  SteamAPICall_t apiCall = SteamUGC()->RemoveDependency((PublishedFileId_t)publishedFileID, (PublishedFileId_t)childPublishedFileID);
   callResultRemoveUGCDependency.Set(apiCall, this, &GodotSteamWorkshop::_remove_ugc_dependency_result);
 }
 
 // Removes a workshop item from the users favorites list.
-void GodotSteamWorkshop::removeItemFromFavorites(uint64_t appID, uint64_t publishedFileID) {
+void GodotSteamWorkshop::removeItemFromFavorites(uint32 appID, uint64_t publishedFileID) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  PublishedFileId_t fileID = (uint64_t)publishedFileID;
-  AppId_t app = (uint32_t)appID;
-  SteamAPICall_t apiCall = SteamUGC()->RemoveItemFromFavorites(app, fileID);
+  SteamAPICall_t apiCall = SteamUGC()->RemoveItemFromFavorites((AppId_t)appID, (PublishedFileId_t)publishedFileID);
   callResultFavoriteItemListChanged.Set(apiCall, this, &GodotSteamWorkshop::_user_favorite_items_list_changed);
 }
 
 // Removes an existing key value tag from an item.
-bool GodotSteamWorkshop::removeItemKeyValueTags(int updateHandle, const String& key) {
+bool GodotSteamWorkshop::removeItemKeyValueTags(uint64_t updateHandle, const String& key) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
-  return SteamUGC()->RemoveItemKeyValueTags(handle, key.utf8().get_data());
+  return SteamUGC()->RemoveItemKeyValueTags((UGCUpdateHandle_t)updateHandle, key.utf8().get_data());
 }
 
 // Removes an existing preview from an item.
-bool GodotSteamWorkshop::removeItemPreview(int updateHandle, int index) {
+bool GodotSteamWorkshop::removeItemPreview(uint64_t updateHandle, int index) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
-  return SteamUGC()->RemoveItemPreview(handle, index);
+  return SteamUGC()->RemoveItemPreview((UGCUpdateHandle_t)updateHandle, index);
 }
 
 // Sets the folder that will be stored as the content for an item.
-bool GodotSteamWorkshop::setItemContent(int updateHandle, const String& contentFolder) {
+bool GodotSteamWorkshop::setItemContent(uint64_t updateHandle, const String& contentFolder) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
-  return SteamUGC()->SetItemContent(handle, contentFolder.utf8().get_data());
+  return SteamUGC()->SetItemContent((UGCUpdateHandle_t)updateHandle, contentFolder.utf8().get_data());
 }
 
 // Sets a new description for an item.
-bool GodotSteamWorkshop::setItemDescription(int updateHandle, const String& description) {
+bool GodotSteamWorkshop::setItemDescription(uint64_t updateHandle, const String& description) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  if (description.length() > DESCRIPTION_MAX_LENGTH) {
-    printf("Description cannot have more than %d ASCII characters. Description not set.", DESCRIPTION_MAX_LENGTH);
+  if (description.length() > k_cchPublishedDocumentDescriptionMax) {
+    printf("Description cannot have more than %d ASCII characters. Description not set.", k_cchPublishedDocumentDescriptionMax);
     return false;
   }
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
-  return SteamUGC()->SetItemDescription(handle, description.utf8().get_data());
+  return SteamUGC()->SetItemDescription((UGCUpdateHandle_t)updateHandle, description.utf8().get_data());
 }
 
 // Sets arbitrary metadata for an item. This metadata can be returned from queries without having to download and install the actual content.
-bool GodotSteamWorkshop::setItemMetadata(int updateHandle, const String& metadata) {
+bool GodotSteamWorkshop::setItemMetadata(uint64_t updateHandle, const String& metadata) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  if (metadata.length() > DESCRIPTION_MAX_LENGTH) {
-    printf("Metadata cannot have more than %d ASCII characters. Metadata not set.", DESCRIPTION_MAX_LENGTH);
+  if (metadata.length() > k_cchDeveloperMetadataMax) {
+    printf("Metadata cannot have more than %d ASCII characters. Metadata not set.", k_cchDeveloperMetadataMax);
     return false;
   }
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
-  return SteamUGC()->SetItemMetadata(handle, metadata.utf8().get_data());
+  return SteamUGC()->SetItemMetadata((UGCUpdateHandle_t)updateHandle, metadata.utf8().get_data());
 }
 
 // Sets the primary preview image for the item.
-bool GodotSteamWorkshop::setItemPreview(int updateHandle, const String& previewFile) {
+bool GodotSteamWorkshop::setItemPreview(uint64_t updateHandle, const String& previewFile) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
-  return SteamUGC()->SetItemPreview(handle, previewFile.utf8().get_data());
+  return SteamUGC()->SetItemPreview((UGCUpdateHandle_t)updateHandle, previewFile.utf8().get_data());
 }
 
 // Sets arbitrary developer specified tags on an item.
-bool GodotSteamWorkshop::setItemTags(int updateHandle, Array tagArray) {
+bool GodotSteamWorkshop::setItemTags(uint64_t updateHandle, Array tagArray) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
   SteamParamStringArray_t *pTags = new SteamParamStringArray_t();
   pTags->m_ppStrings = new const char*[tagArray.size()];
   uint32 strCount = tagArray.size();
@@ -644,66 +619,68 @@ bool GodotSteamWorkshop::setItemTags(int updateHandle, Array tagArray) {
 
   pTags->m_nNumStrings = tagArray.size();
 
-  return SteamUGC()->SetItemTags(handle, pTags);
+  return SteamUGC()->SetItemTags((UGCUpdateHandle_t)updateHandle, pTags);
 }
 
 // Sets a new title for an item.
-bool GodotSteamWorkshop::setItemTitle(int updateHandle, const String& title) {
+bool GodotSteamWorkshop::setItemTitle(uint64_t updateHandle, const String& title) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  if (title.length() > DESCRIPTION_MAX_LENGTH) {
-    printf("Title cannot have more than %d ASCII characters. Title not set.", DESCRIPTION_MAX_LENGTH);
+  if (title.length() > k_cchPublishedDocumentTitleMax) {
+    printf("Title cannot have more than %d ASCII characters. Title not set.", k_cchPublishedDocumentTitleMax);
 
     return false;
   }
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
-  return SteamUGC()->SetItemTitle(handle, title.utf8().get_data());
+  return SteamUGC()->SetItemTitle((UGCUpdateHandle_t)updateHandle, title.utf8().get_data());
 }
 
 // Sets the language of the title and description that will be set in this item update.
-bool GodotSteamWorkshop::setItemUpdateLanguage(int updateHandle, const String& language) {
+bool GodotSteamWorkshop::setItemUpdateLanguage(uint64_t updateHandle, const String& language) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
-  return SteamUGC()->SetItemUpdateLanguage(handle, language.utf8().get_data());
+  return SteamUGC()->SetItemUpdateLanguage((UGCUpdateHandle_t)updateHandle, language.utf8().get_data());
 }
 
 // Sets the visibility of an item.
-bool GodotSteamWorkshop::setItemVisibility(int updateHandle, int visibility) {
+bool GodotSteamWorkshop::setItemVisibility(uint64_t updateHandle, int visibility) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCUpdateHandle_t handle = uint64(updateHandle);
-  return SteamUGC()->SetItemVisibility(handle, (ERemoteStoragePublishedFileVisibility)visibility);
+  return SteamUGC()->SetItemVisibility((UGCUpdateHandle_t)updateHandle, (ERemoteStoragePublishedFileVisibility)visibility);
 }
 
 // Sets the language to return the title and description in for the items on a pending UGC Query.
-bool GodotSteamWorkshop::setLanguage(int queryHandle, const String& language) {
+bool GodotSteamWorkshop::setLanguage(uint64_t queryHandle, const String& language) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  UGCQueryHandle_t handle = (uint64_t)queryHandle;
-  return SteamUGC()->SetLanguage(handle, language.utf8().get_data());
+  return SteamUGC()->SetLanguage((UGCQueryHandle_t)queryHandle, language.utf8().get_data());
+}
+
+uint64_t GodotSteamWorkshop::startItemUpdate(uint32 appID, uint64_t publishedFileID) {
+  STEAM_FAIL_COND_V(!isSteamUGCReady(), -1);
+  
+  return (uint64_t)SteamUGC()->StartItemUpdate((AppId_t)appID, (PublishedFileId_t)publishedFileID);
 }
 
 // SuspendDownloads( true ) will suspend all workshop downloads until
 // SuspendDownloads( false ) is called or the game ends
 void GodotSteamWorkshop::suspendDownloads(bool bSuspend) {
-  return SteamUGC()->SuspendDownloads(bSuspend);
+  STEAM_FAIL_COND(!isSteamUGCReady());
+
+  SteamUGC()->SuspendDownloads(bSuspend);
 }
 
 void GodotSteamWorkshop::subscribeItem(uint64_t publishedFileID) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  PublishedFileId_t fileID = (uint64_t)publishedFileID;
-  SteamAPICall_t apiCall = SteamUGC()->SubscribeItem(fileID);
+  SteamAPICall_t apiCall = SteamUGC()->SubscribeItem((PublishedFileId_t)publishedFileID);
   callResultItemSubscribed.Set(apiCall, this, &GodotSteamWorkshop::_item_subscribed);
 }
 
 void GodotSteamWorkshop::unsubscribeItem(uint64_t publishedFileID) {
   STEAM_FAIL_COND(!isSteamUGCReady());
 
-  PublishedFileId_t fileID = (uint64_t)publishedFileID;
-  SteamAPICall_t apiCall = SteamUGC()->UnsubscribeItem(fileID);
+  SteamAPICall_t apiCall = SteamUGC()->UnsubscribeItem((PublishedFileId_t)publishedFileID);
   callResultItemUnsubscribed.Set(apiCall, this, &GodotSteamWorkshop::_item_unsubscribed);
 }
 
@@ -806,7 +783,7 @@ void GodotSteamWorkshop::_ugc_query_completed(SteamUGCQueryCompleted_t* callData
   uint32 totalMatching = callData->m_unTotalMatchingResults;
   bool cached = callData->m_bCachedData;
 
-  emit_signal("workshop_ugc_query_completed", (int)handle, result, resultsReturned, totalMatching, cached);
+  emit_signal("workshop_ugc_query_completed", (uint64_t)handle, result, resultsReturned, totalMatching, cached);
 }
 
 // Called when workshop item playtime tracking has stopped.
@@ -887,8 +864,7 @@ void GodotSteamWorkshop::_bind_methods() {
   ObjectTypeDB::bind_method("addRequiredKeyValueTag",&GodotSteamWorkshop::addRequiredKeyValueTag);
   ObjectTypeDB::bind_method("addRequiredTag",&GodotSteamWorkshop::addRequiredTag);
 
-  ObjectTypeDB::bind_method("initWorkshopForGameServer",&GodotSteamWorkshop::initWorkshopForGameServer);
-
+  ObjectTypeDB::bind_method("commitItemUpdate",&GodotSteamWorkshop::commitItemUpdate);
   ObjectTypeDB::bind_method("createItem",&GodotSteamWorkshop::createItem);
   ObjectTypeDB::bind_method("createQueryAllUGCRequest",&GodotSteamWorkshop::createQueryAllUGCRequest);
   ObjectTypeDB::bind_method("createQueryUGCDetailsRequest",&GodotSteamWorkshop::createQueryUGCDetailsRequest);
@@ -913,6 +889,8 @@ void GodotSteamWorkshop::_bind_methods() {
   ObjectTypeDB::bind_method("getQueryUGCStatistic",&GodotSteamWorkshop::getQueryUGCStatistic);
   ObjectTypeDB::bind_method("getSubscribedItems",&GodotSteamWorkshop::getSubscribedItems);
 
+  ObjectTypeDB::bind_method("initWorkshopForGameServer",&GodotSteamWorkshop::initWorkshopForGameServer);
+
   ObjectTypeDB::bind_method("releaseQueryUGCRequest",&GodotSteamWorkshop::releaseQueryUGCRequest);
   ObjectTypeDB::bind_method("removeAppDependency",&GodotSteamWorkshop::removeAppDependency);
   ObjectTypeDB::bind_method("removeDependency",&GodotSteamWorkshop::removeDependency);
@@ -929,6 +907,7 @@ void GodotSteamWorkshop::_bind_methods() {
   ObjectTypeDB::bind_method("setItemUpdateLanguage",&GodotSteamWorkshop::setItemUpdateLanguage);
   ObjectTypeDB::bind_method("setItemVisibility",&GodotSteamWorkshop::setItemVisibility);
   ObjectTypeDB::bind_method("setLanguage",&GodotSteamWorkshop::setLanguage);
+  ObjectTypeDB::bind_method("startItemUpdate",&GodotSteamWorkshop::startItemUpdate);
   ObjectTypeDB::bind_method("subscribeItem",&GodotSteamWorkshop::subscribeItem);
   ObjectTypeDB::bind_method("suspendDownloads",&GodotSteamWorkshop::suspendDownloads);
 

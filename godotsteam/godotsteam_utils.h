@@ -5,7 +5,7 @@
 #include <steam/steam_api.h>
 
 #include "godotsteam_utils.h"
-#include "object.h"
+#include "core/object.h"
 
 #define STEAM_FAIL_COND(m_cond) \
   {                             \

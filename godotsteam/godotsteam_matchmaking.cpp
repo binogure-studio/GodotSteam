@@ -25,7 +25,8 @@ bool GodotSteamMatchmaking::isSteamMatchmakingReady() {
 void GodotSteamMatchmaking::createLobby(int lobbyType, int cMaxMembers) {
   STEAM_FAIL_COND(!isSteamMatchmakingReady());
 
-  SteamMatchmaking()->CreateLobby((ELobbyType) lobbyType, cMaxMembers);
+  SteamAPICall_t apiCall = SteamMatchmaking()->CreateLobby((ELobbyType)lobbyType, cMaxMembers);
+  callResultCreateLobby.Set(apiCall, this, &GodotSteamMatchmaking::_lobby_created);
 }
 // Join an existing lobby
 void GodotSteamMatchmaking::joinLobby(int steamIDLobby) {
@@ -52,7 +53,7 @@ bool GodotSteamMatchmaking::inviteUserToLobby(int steamIDLobby, int steamIDInvit
 }
 
 // Signal the lobby has been created
-void GodotSteamMatchmaking::_lobby_created(LobbyCreated_t *lobbyData) {
+void GodotSteamMatchmaking::_lobby_created(LobbyCreated_t *lobbyData, bool ioFailure) {
   int connect = (int)lobbyData->m_eResult;
   int lobbyID = (uint64)lobbyData->m_ulSteamIDLobby;
 
@@ -90,12 +91,6 @@ void GodotSteamMatchmaking::_server_connected(SteamServersConnected_t *conData) 
 // When disconnected from a server
 void GodotSteamMatchmaking::_server_disconnected(SteamServersDisconnected_t *conData) {
   emit_signal("connection_changed", false);
-}
-
-// Posted after the user gains ownership of DLC & that DLC is installed
-void GodotSteamMatchmaking::_dlc_installed(DlcInstalled_t *callData) {
-  int appID = (AppId_t)callData->m_nAppID;
-  emit_signal("dlc_installed", appID);
 }
 
 void GodotSteamMatchmaking::_bind_methods() {

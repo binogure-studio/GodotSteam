@@ -6,9 +6,9 @@
 
 #include "core/io/ip.h"
 #include "core/io/ip_address.h"
-#include "dictionary.h"
-#include "object.h"
-#include "reference.h"
+#include "core/dictionary.h"
+#include "core/object.h"
+#include "core/reference.h"
 #include "scene/resources/texture.h"
 
 // Local dependencies
@@ -48,13 +48,14 @@ protected:
   static GodotSteamMatchmaking *singleton;
 
 private:
-  STEAM_CALLBACK(GodotSteamMatchmaking, _lobby_created, LobbyCreated_t);
+  CCallResult<GodotSteamMatchmaking, LobbyCreated_t> callResultCreateLobby;
+  void _lobby_created(LobbyCreated_t *callData, bool ioFailure);
+
   STEAM_CALLBACK(GodotSteamMatchmaking, _lobby_joined, LobbyEnter_t);
   STEAM_CALLBACK(GodotSteamMatchmaking, _lobby_invite, LobbyInvite_t);
   STEAM_CALLBACK(GodotSteamMatchmaking, _join_requested, GameRichPresenceJoinRequested_t);
   STEAM_CALLBACK(GodotSteamMatchmaking, _server_connected, SteamServersConnected_t);
   STEAM_CALLBACK(GodotSteamMatchmaking, _server_disconnected, SteamServersDisconnected_t);
-  STEAM_CALLBACK(GodotSteamMatchmaking, _dlc_installed, DlcInstalled_t);
 
   OBJ_TYPE(GodotSteamMatchmaking, Object);
   OBJ_CATEGORY("GodotSteamMatchmaking");

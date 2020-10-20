@@ -6,10 +6,10 @@
 
 #include "core/io/ip.h"
 #include "core/io/ip_address.h"
-#include "dictionary.h"
+#include "core/dictionary.h"
 #include "godotsteam_utils.h"
-#include "object.h"
-#include "reference.h"
+#include "core/object.h"
+#include "core/reference.h"
 #include "scene/resources/texture.h"
 
 class GodotSteamUserstats: public Object
@@ -50,7 +50,7 @@ public:
   void setLeaderboardHandle(uint64 lHandle);
   uint64 getLeaderboardHandle();
   Array getLeaderboardEntries();
-  bool getAchievementAndUnlockTime(const String &name, bool achieved, int unlockTime);
+  Dictionary getAchievementAndUnlockTime(const String &name);
   bool indicateAchievementProgress(const String &name, int curProgress, int maxProgress);
 
 protected:

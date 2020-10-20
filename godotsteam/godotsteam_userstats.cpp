@@ -225,13 +225,23 @@ Array GodotSteamUserstats::getLeaderboardEntries() {
   return leaderboard_entries;
 }
 
-bool GodotSteamUserstats::getAchievementAndUnlockTime(const String &name,
-                                                      bool achieved,
-                                                      int unlockTime) {
-  STEAM_FAIL_COND_V(!isSteamUserstatsReady(), 0);
+Dictionary GodotSteamUserstats::getAchievementAndUnlockTime(const String &name) {
+  Dictionary achieve;
+  STEAM_FAIL_COND_V(!isSteamUserstatsReady(), achieve);
 
-  return SteamUserStats()->GetAchievementAndUnlockTime(
-      name.utf8().get_data(), (bool *)achieved, (uint32_t *)unlockTime);
+  bool achieved = false;
+  uint32 unlockTime = 0;
+
+  // Get the data from Steam
+  bool retrieved = SteamUserStats()->GetAchievementAndUnlockTime(name.utf8().get_data(), &achieved, &unlockTime);
+
+  if (retrieved) {
+    achieve["retrieve"] = retrieved;
+    achieve["achieved"] = achieved;
+    achieve["unlocked"] = unlockTime;
+  }
+
+  return achieve;
 }
 
 bool GodotSteamUserstats::indicateAchievementProgress(const String &name,

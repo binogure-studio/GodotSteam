@@ -4,7 +4,7 @@
 #include <steam/steam_api.h>
 
 #include "godotsteam_utils.h"
-#include "object.h"
+#include "core/object.h"
 
 class GodotSteamScreenshots : public Object
 {

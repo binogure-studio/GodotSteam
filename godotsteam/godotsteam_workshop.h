@@ -4,16 +4,11 @@
 #include <steam/steam_api.h>
 
 #include "godotsteam_utils.h"
-#include "object.h"
+#include "core/object.h"
 
 class GodotSteamWorkshop: public Object
 {
 public:
-  enum {
-    DESCRIPTION_MAX_LENGTH = 255,
-    QUERY_MAX_LENGTH = 256
-  };
-
   static GodotSteamWorkshop *get_singleton();
   static void reset_singleton();
 
@@ -22,20 +17,21 @@ public:
 
   bool isSteamUGCReady();
 
-  void addAppDependency(uint64_t publishedFileID, uint64_t appID);
+  void addAppDependency(uint64_t publishedFileID, uint32 appID);
   void addDependency(uint64_t publishedFileID, uint64_t childPublishedFileID);
-  bool addExcludedTag(int queryHandle, const String& tagName);
-  bool addItemKeyValueTag(int updateHandle, const String& key, const String& value);
-  bool addItemPreviewFile(int queryHandle, const String& previewFile, int type);
-  bool addItemPreviewVideo(int queryHandle, const String& videoID);
-  void addItemToFavorite(AppId_t appID, uint64_t publishedFileID);
-  bool addRequiredKeyValueTag(int queryHandle, const String& key, const String& value);
-  bool addRequiredTag(int queryHandle, const String& tagName);
+  bool addExcludedTag(uint64_t queryHandle, const String& tagName);
+  bool addItemKeyValueTag(uint64_t updateHandle, const String& key, const String& value);
+  bool addItemPreviewFile(uint64_t queryHandle, const String& previewFile, int type);
+  bool addItemPreviewVideo(uint64_t queryHandle, const String& videoID);
+  void addItemToFavorite(uint32 appID, uint64_t publishedFileID);
+  bool addRequiredKeyValueTag(uint64_t queryHandle, const String& key, const String& value);
+  bool addRequiredTag(uint64_t queryHandle, const String& tagName);
 
-  void createItem(AppId_t appID, int fileType);
-  void createQueryAllUGCRequest(int queryType, int matchingType, AppId_t creatorID, int page);
+  void commitItemUpdate(uint64_t updateHandle, const String& note);
+  void createItem(uint32 appID, int fileType);
+  void createQueryAllUGCRequest(int queryType, int matchingType, uint32 creatorID, int page);
   void createQueryUGCDetailsRequest(Array publishedFileIDs);
-  void createQueryUserUGCRequest(AccountID_t accountID, int listType, AppId_t creatorID, uint32 page);
+  void createQueryUserUGCRequest(AccountID_t accountID, int listType, uint32 creatorID, uint32 page);
 
   void deleteItem(uint64_t publishedFileID);
   bool downloadItem(uint64_t nPublishedFileID, bool bHighPriority);
@@ -43,38 +39,41 @@ public:
   Dictionary getItemDownloadInfo(uint64_t publishedFileID);
   int getNumSubscribedItems();
   int getItemState(uint64_t publishedFileID);
-  Dictionary getQueryUGCAdditionalPreview(int queryHandle, int index, int previewIndex);
-  Dictionary getQueryUGCChildren(int queryHandle, int index);
-  Dictionary getQueryUGCKeyValueTag(int queryHandle, int index, int keyValueTagIndex);
-  String getQueryUGCMetadata(int queryHandle, int index);
-  int getQueryUGCNumAdditionalPreviews(int queryHandle, int index);
-  int getQueryUGCNumKeyValueTags(int queryHandle, int index);
-  String getQueryUGCPreviewURL(int queryHandle, int index);
-  Dictionary getQueryUGCResult(int queryHandle, int index);
-  Dictionary getQueryUGCStatistic(int queryHandle, int index, int statType);
+  Dictionary getQueryUGCAdditionalPreview(uint64_t queryHandle, int index, int previewIndex);
+  Dictionary getQueryUGCChildren(uint64_t queryHandle, int index);
+  Dictionary getQueryUGCKeyValueTag(uint64_t queryHandle, int index, int keyValueTagIndex);
+  String getQueryUGCMetadata(uint64_t queryHandle, int index);
+  int getQueryUGCNumAdditionalPreviews(uint64_t queryHandle, int index);
+  int getQueryUGCNumKeyValueTags(uint64_t queryHandle, int index);
+  String getQueryUGCPreviewURL(uint64_t queryHandle, int index);
+  Dictionary getQueryUGCResult(uint64_t queryHandle, int index);
+  Dictionary getQueryUGCStatistic(uint64_t queryHandle, int index, int statType);
   Dictionary getItemInstallInfo(uint64_t publishedFileID);
-  Dictionary getItemUpdateProgress(int updateHandle);
+  Dictionary getItemUpdateProgress(uint64_t updateHandle);
   Array getSubscribedItems();
 
-  bool initWorkshopForGameServer(int workshopDepotID);
+  bool initWorkshopForGameServer(DepotId_t workshopDepotID);
 
-  bool releaseQueryUGCRequest(int queryHandle);
+  bool releaseQueryUGCRequest(uint64_t queryHandle);
 
-  void removeAppDependency(uint64_t publishedFileID, uint64_t appID);
-  void removeDependency(uint64_t publishedFileID, int childPublishedFileID);
-  void removeItemFromFavorites(uint64_t appID, uint64_t publishedFileID);
-  bool removeItemKeyValueTags(int updateHandle, const String& key);
-  bool removeItemPreview(int updateHandle, int index);
+  void removeAppDependency(uint64_t publishedFileID, uint32 appID);
+  void removeDependency(uint64_t publishedFileID, uint64_t childPublishedFileID);
+  void removeItemFromFavorites(uint32 appID, uint64_t publishedFileID);
+  bool removeItemKeyValueTags(uint64_t updateHandle, const String& key);
+  bool removeItemPreview(uint64_t updateHandle, int index);
 
-  bool setItemContent(int updateHandle, const String& contentFolder);
-  bool setItemDescription(int updateHandle, const String& description);
-  bool setItemMetadata(int updateHandle, const String& metadata);
-  bool setItemPreview(int updateHandle, const String& previewFile);
-  bool setItemTags(int updateHandle, Array tagArray);
-  bool setItemTitle(int updateHandle, const String& title);
-  bool setItemUpdateLanguage(int updateHandle, const String& language);
-  bool setItemVisibility(int updateHandle, int visibility);
-  bool setLanguage(int queryHandle, const String& language);
+  bool setItemContent(uint64_t updateHandle, const String& contentFolder);
+  bool setItemDescription(uint64_t updateHandle, const String& description);
+  bool setItemMetadata(uint64_t updateHandle, const String& metadata);
+  bool setItemPreview(uint64_t updateHandle, const String& previewFile);
+  bool setItemTags(uint64_t updateHandle, Array tagArray);
+  bool setItemTitle(uint64_t updateHandle, const String& title);
+  bool setItemUpdateLanguage(uint64_t updateHandle, const String& language);
+  bool setItemVisibility(uint64_t updateHandle, int visibility);
+  bool setLanguage(uint64_t queryHandle, const String& language);
+
+  uint64_t startItemUpdate(uint32 appID, uint64_t publishedFileID);
+
   void subscribeItem(uint64_t publishedFileID);
   void suspendDownloads(bool bSuspend);
 

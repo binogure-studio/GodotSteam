@@ -4,9 +4,9 @@
 #include <inttypes.h>
 #include <steam/steam_api.h>
 
-#include "object.h"
-#include "reference.h"
-#include "dictionary.h"
+#include "core/object.h"
+#include "core/reference.h"
+#include "core/dictionary.h"
 #include "godotsteam_utils.h"
 
 class GodotSteamMusic : public Object

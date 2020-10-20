@@ -45,11 +45,11 @@ int GodotSteamUser::getPlayerSteamLevel() {
 String GodotSteamUser::getUserDataFolder() {
   STEAM_FAIL_COND_V(!isSteamUserReady(), "");
 
-  const int cubBuffer = 256;
-  char *pchBuffer = new char[cubBuffer];
-  SteamUser()->GetUserDataFolder((char *)pchBuffer, cubBuffer);
-  String data_path = pchBuffer;
-  delete pchBuffer;
+  const int bufferSize = 256;
+  char *buffer = new char[bufferSize];
+  SteamUser()->GetUserDataFolder((char *)buffer, bufferSize);
+  String data_path = buffer;
+  delete[] buffer;
   return data_path;
 }
 
