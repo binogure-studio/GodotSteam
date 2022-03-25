@@ -41,6 +41,7 @@ public:
   bool isDLCInstalled(int value);
   void requestAppProofOfPurchaseKey(int value);
   bool isAppInstalled(int value);
+  String getCurrentBetaName();
   String getCurrentGameLanguage();
   bool isVACBanned();
   int getEarliestPurchaseUnixTime(int value);

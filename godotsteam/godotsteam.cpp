@@ -82,6 +82,18 @@ bool GodotSteam::isAppInstalled(int value) {
   return SteamApps()->BIsAppInstalled((AppId_t)value);
 }
 
+String GodotSteam::getCurrentBetaName() {
+  STEAM_FAIL_COND_V(!isSteamAppReady(), "default");
+  String result = "default";
+  char branchName[k_cchPublishedFileURLMax];
+
+  if (SteamApps()->GetCurrentBetaName(branchName, k_cchPublishedFileURLMax)) {
+    result = String(branchName);
+  }
+
+  return result;
+}
+
 String GodotSteam::getCurrentGameLanguage() {
   STEAM_FAIL_COND_V(!isSteamAppReady(), "None");
 
@@ -151,6 +163,8 @@ void GodotSteam::_bind_methods() {
   ObjectTypeDB::bind_method("isAppInstalled", &GodotSteam::isAppInstalled);
   ObjectTypeDB::bind_method("getCurrentGameLanguage",
                             &GodotSteam::getCurrentGameLanguage);
+  ObjectTypeDB::bind_method("getCurrentBetaName",
+                            &GodotSteam::getCurrentBetaName);
   ObjectTypeDB::bind_method("isVACBanned", &GodotSteam::isVACBanned);
   ObjectTypeDB::bind_method("getEarliestPurchaseUnixTime",
                             &GodotSteam::getEarliestPurchaseUnixTime);

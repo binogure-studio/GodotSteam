@@ -174,6 +174,7 @@ void GodotSteamWorkshop::createQueryAllUGCRequest(int queryType, int matchingTyp
   UGCQueryHandle_t handle = SteamUGC()->CreateQueryAllUGCRequest(query, match, creatorID, creatorID, page);
 
   SteamUGC()->SetReturnMetadata(handle, true);
+  SteamUGC()->SetReturnChildren(handle, true);
 
   SteamAPICall_t apiCall = SteamUGC()->SendQueryUGCRequest(handle);
 
@@ -201,6 +202,7 @@ void GodotSteamWorkshop::createQueryUserUGCRequest(AccountID_t accountID, int li
   UGCQueryHandle_t handle = SteamUGC()->CreateQueryUserUGCRequest(accountID, list, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_LastUpdatedDesc, creatorID, creatorID, page);
 
   SteamUGC()->SetReturnMetadata(handle, true);
+  SteamUGC()->SetReturnChildren(handle, true);
 
   SteamAPICall_t apiCall = SteamUGC()->SendQueryUGCRequest(handle);
 
@@ -225,6 +227,7 @@ void GodotSteamWorkshop::createQueryUGCDetailsRequest(Array publishedFileIDs) {
   UGCQueryHandle_t handle = SteamUGC()->CreateQueryUGCDetailsRequest(fileIDs, fileCount);
 
   SteamUGC()->SetReturnMetadata(handle, true);
+  SteamUGC()->SetReturnChildren(handle, true);
 
   SteamAPICall_t apiCall = SteamUGC()->SendQueryUGCRequest(handle);
 
@@ -342,20 +345,29 @@ Dictionary GodotSteamWorkshop::getQueryUGCAdditionalPreview(uint64_t queryHandle
 }
 
 // Retrieve the ids of any child items of an individual workshop item after receiving a querying UGC call result. These items can either be a part of a collection or some other dependency (see AddDependency).
-Dictionary GodotSteamWorkshop::getQueryUGCChildren(uint64_t queryHandle, int index) {
+Dictionary GodotSteamWorkshop::getQueryUGCChildren(uint64_t queryHandle, int index, int numChildren) {
   Dictionary children;
 
   STEAM_FAIL_COND_V(!isSteamUGCReady(), children);
+  STEAM_FAIL_COND_V(numChildren < 1, children);
 
-  PublishedFileId_t *child = new PublishedFileId_t[100];
-  bool success = SteamUGC()->GetQueryUGCChildren((UGCQueryHandle_t)queryHandle, index, (PublishedFileId_t*)child, 100);
+  PublishedFileId_t *child = new PublishedFileId_t[numChildren];
+  bool success = SteamUGC()->GetQueryUGCChildren((UGCQueryHandle_t)queryHandle, index, (PublishedFileId_t*)child, numChildren);
 
   if (success) {
+    Array childrenList;
+
+    for (int index = 0; index < numChildren; index++) {
+      childrenList.append((uint64_t)child[index]);
+    }
+
     children["success"] = success;
     children["handle"] = queryHandle;
     children["index"] = index;
-    children["children"] = child;
+    children["children"] = childrenList;
   }
+
+  delete child;
 
   return children;
 }
@@ -506,7 +518,7 @@ Array GodotSteamWorkshop::getSubscribedItems() {
   int itemList = SteamUGC()->GetSubscribedItems(items, numItems);
 
   for (int index = 0; index < itemList; index++) {
-    subscribed.append((int)items[index]);
+    subscribed.append((uint64_t)items[index]);
   }
 
   delete items;
@@ -602,6 +614,12 @@ bool GodotSteamWorkshop::setItemPreview(uint64_t updateHandle, const String& pre
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
   return SteamUGC()->SetItemPreview((UGCUpdateHandle_t)updateHandle, previewFile.utf8().get_data());
+}
+
+bool GodotSteamWorkshop::updateItemPreviewFile(uint64_t updateHandle, int index, const String& previewFile) {
+  STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
+
+  return SteamUGC()->UpdateItemPreviewFile((UGCUpdateHandle_t)updateHandle, index, previewFile.utf8().get_data());
 }
 
 // Sets arbitrary developer specified tags on an item.
@@ -912,6 +930,7 @@ void GodotSteamWorkshop::_bind_methods() {
   ObjectTypeDB::bind_method("suspendDownloads",&GodotSteamWorkshop::suspendDownloads);
 
   ObjectTypeDB::bind_method("unsubscribeItem",&GodotSteamWorkshop::unsubscribeItem);
+  ObjectTypeDB::bind_method("updateItemPreviewFile",&GodotSteamWorkshop::updateItemPreviewFile);
 
 
   ADD_SIGNAL(MethodInfo("workshop_item_deleted", 

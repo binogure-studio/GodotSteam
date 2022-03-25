@@ -40,7 +40,7 @@ public:
   int getNumSubscribedItems();
   int getItemState(uint64_t publishedFileID);
   Dictionary getQueryUGCAdditionalPreview(uint64_t queryHandle, int index, int previewIndex);
-  Dictionary getQueryUGCChildren(uint64_t queryHandle, int index);
+  Dictionary getQueryUGCChildren(uint64_t queryHandle, int index, int numChildren);
   Dictionary getQueryUGCKeyValueTag(uint64_t queryHandle, int index, int keyValueTagIndex);
   String getQueryUGCMetadata(uint64_t queryHandle, int index);
   int getQueryUGCNumAdditionalPreviews(uint64_t queryHandle, int index);
@@ -77,6 +77,7 @@ public:
   void subscribeItem(uint64_t publishedFileID);
   void suspendDownloads(bool bSuspend);
 
+  bool updateItemPreviewFile(uint64_t updateHandle, int index, const String& previewFile);
   void unsubscribeItem(uint64_t publishedFileID);
 
 protected:
