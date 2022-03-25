@@ -1,5 +1,4 @@
-#include "globals.h"
-#include "object_type_db.h"
+#include "core/config/engine.h"
 #include "register_types.h"
 
 #include "godotsteam.h"
@@ -13,25 +12,25 @@
 #include "godotsteam_workshop.h"
 
 void register_godotsteam_types() {
-  Globals::get_singleton()->add_singleton(Globals::Singleton("GodotSteam", GodotSteam::get_singleton()));
-  Globals::get_singleton()->add_singleton(Globals::Singleton("GodotSteamFriends", GodotSteamFriends::get_singleton()));
-  Globals::get_singleton()->add_singleton(Globals::Singleton("GodotSteamMatchmaking", GodotSteamMatchmaking::get_singleton()));
-  Globals::get_singleton()->add_singleton(Globals::Singleton("GodotSteamMusic", GodotSteamMusic::get_singleton()));
-  Globals::get_singleton()->add_singleton(Globals::Singleton("GodotSteamScreenshots", GodotSteamScreenshots::get_singleton()));
-  Globals::get_singleton()->add_singleton(Globals::Singleton("GodotSteamUser", GodotSteamUser::get_singleton()));
-  Globals::get_singleton()->add_singleton(Globals::Singleton("GodotSteamUserstats", GodotSteamUserstats::get_singleton()));
-  Globals::get_singleton()->add_singleton(Globals::Singleton("GodotSteamUtils", GodotSteamUtils::get_singleton()));
-  Globals::get_singleton()->add_singleton(Globals::Singleton("GodotSteamWorkshop", GodotSteamWorkshop::get_singleton()));
+  GDREGISTER_CLASS(GodotSteam);
+  GDREGISTER_CLASS(GodotSteamFriends);
+  GDREGISTER_CLASS(GodotSteamMatchmaking);
+  GDREGISTER_CLASS(GodotSteamMusic);
+  GDREGISTER_CLASS(GodotSteamScreenshots);
+  GDREGISTER_CLASS(GodotSteamUser);
+  GDREGISTER_CLASS(GodotSteamUserstats);
+  GDREGISTER_CLASS(GodotSteamUtils);
+  GDREGISTER_CLASS(GodotSteamWorkshop);
 
-  ObjectTypeDB::register_virtual_type<GodotSteam>();
-  ObjectTypeDB::register_virtual_type<GodotSteamFriends>();
-  ObjectTypeDB::register_virtual_type<GodotSteamMatchmaking>();
-  ObjectTypeDB::register_virtual_type<GodotSteamMusic>();
-  ObjectTypeDB::register_virtual_type<GodotSteamScreenshots>();
-  ObjectTypeDB::register_virtual_type<GodotSteamUser>();
-  ObjectTypeDB::register_virtual_type<GodotSteamUserstats>();
-  ObjectTypeDB::register_virtual_type<GodotSteamUtils>();
-  ObjectTypeDB::register_virtual_type<GodotSteamWorkshop>();
+  Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSteam", GodotSteam::get_singleton()));
+  Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSteamFriends", GodotSteamFriends::get_singleton()));
+  Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSteamMatchmaking", GodotSteamMatchmaking::get_singleton()));
+  Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSteamMusic", GodotSteamMusic::get_singleton()));
+  Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSteamScreenshots", GodotSteamScreenshots::get_singleton()));
+  Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSteamUser", GodotSteamUser::get_singleton()));
+  Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSteamUserstats", GodotSteamUserstats::get_singleton()));
+  Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSteamUtils", GodotSteamUtils::get_singleton()));
+  Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSteamWorkshop", GodotSteamWorkshop::get_singleton()));
 }
 
 void unregister_godotsteam_types() {

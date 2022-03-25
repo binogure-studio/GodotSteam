@@ -19,7 +19,7 @@ void GodotSteamUtils::reset_singleton() {
   GodotSteamUtils::singleton = NULL;
 }
 
-CSteamID GodotSteamUtils::createSteamID(uint32 steamID, int accountType) {
+CSteamID GodotSteamUtils::createSteamID(uint32 steamID, uint64_t accountType) {
   CSteamID cSteamID;
   if (accountType < 0 || accountType >= k_EAccountTypeMax) {
     accountType = 1;
@@ -37,7 +37,7 @@ bool GodotSteamUtils::isOverlayEnabled() {
   return SteamUtils()->IsOverlayEnabled();
 }
 
-void GodotSteamUtils::setOverlayNotificationPosition(int pos) {
+void GodotSteamUtils::setOverlayNotificationPosition(uint64_t pos) {
   if ((pos < 0) || (pos > 3) || (SteamUtils() == NULL)) {
     return;
   }
@@ -48,21 +48,21 @@ String GodotSteamUtils::getSteamUILanguage() {
   return SteamUtils()->GetSteamUILanguage();
 }
 
-int GodotSteamUtils::getAppID() {
+uint64_t GodotSteamUtils::getAppID() {
   if (SteamUtils() == NULL) {
     return 0;
   }
   return SteamUtils()->GetAppID();
 }
 
-int GodotSteamUtils::getSecondsSinceAppActive() {
+uint64_t GodotSteamUtils::getSecondsSinceAppActive() {
   if (SteamUtils() == NULL) {
     return 0;
   }
   return SteamUtils()->GetSecondsSinceAppActive();
 }
 
-int GodotSteamUtils::getCurrentBatteryPower() {
+uint64_t GodotSteamUtils::getCurrentBatteryPower() {
   if (SteamUtils() == NULL) {
     return 0;
   }
@@ -76,7 +76,7 @@ bool GodotSteamUtils::isSteamRunningInVR() {
   return SteamUtils()->IsSteamRunningInVR();
 }
 
-int GodotSteamUtils::getServerRealTime() {
+uint64_t GodotSteamUtils::getServerRealTime() {
   if (SteamUtils() == NULL) {
     return 0;
   }
@@ -98,24 +98,24 @@ void GodotSteamUtils::startVRDashboard() {
 }
 
 void GodotSteamUtils::_bind_methods() {
-  ObjectTypeDB::bind_method("getIPCountry", &GodotSteamUtils::getIPCountry);
-  ObjectTypeDB::bind_method("isOverlayEnabled",
+  ClassDB::bind_method("getIPCountry", &GodotSteamUtils::getIPCountry);
+  ClassDB::bind_method("isOverlayEnabled",
                             &GodotSteamUtils::isOverlayEnabled);
-  ObjectTypeDB::bind_method("getSteamUILanguage",
+  ClassDB::bind_method("getSteamUILanguage",
                             &GodotSteamUtils::getSteamUILanguage);
-  ObjectTypeDB::bind_method("getAppID", &GodotSteamUtils::getAppID);
-  ObjectTypeDB::bind_method("getSecondsSinceAppActive",
+  ClassDB::bind_method("getAppID", &GodotSteamUtils::getAppID);
+  ClassDB::bind_method("getSecondsSinceAppActive",
                             &GodotSteamUtils::getSecondsSinceAppActive);
-  ObjectTypeDB::bind_method(_MD("setOverlayNotificationPosition", "0-3"),
+  ClassDB::bind_method(D_METHOD("setOverlayNotificationPosition", "0-3"),
                             &GodotSteamUtils::setOverlayNotificationPosition);
-  ObjectTypeDB::bind_method("getCurrentBatteryPower",
+  ClassDB::bind_method("getCurrentBatteryPower",
                             &GodotSteamUtils::getCurrentBatteryPower);
-  ObjectTypeDB::bind_method("getServerRealTime",
+  ClassDB::bind_method("getServerRealTime",
                             &GodotSteamUtils::getServerRealTime);
-  ObjectTypeDB::bind_method("isSteamRunningInVR",
+  ClassDB::bind_method("isSteamRunningInVR",
                             &GodotSteamUtils::isSteamRunningInVR);
-  ObjectTypeDB::bind_method("isSteamInBigPictureMode",
+  ClassDB::bind_method("isSteamInBigPictureMode",
                             &GodotSteamUtils::isSteamInBigPictureMode);
-  ObjectTypeDB::bind_method("startVRDashboard",
+  ClassDB::bind_method("startVRDashboard",
                             &GodotSteamUtils::startVRDashboard);
 }

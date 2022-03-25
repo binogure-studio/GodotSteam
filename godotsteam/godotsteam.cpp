@@ -2,7 +2,11 @@
 
 GodotSteam *GodotSteam::singleton = NULL;
 
-GodotSteam::GodotSteam() {
+GodotSteam::GodotSteam():
+  callbackOverlayToggled(this, &GodotSteam::_overlay_toggled),
+  callbackLowPower(this, &GodotSteam::_low_power),
+  callbackDLCInstalled(this, &GodotSteam::_dlc_installed)
+{
   isInitSuccess = false;
   singleton = this;
 }
@@ -26,12 +30,12 @@ void GodotSteam::reset_singleton() {
 bool GodotSteam::isSteamAppReady() { return SteamApps() != NULL; }
 bool GodotSteam::isSteamRunning(void) { return SteamAPI_IsSteamRunning(); }
 
-bool GodotSteam::restartAppIfNecessary(int value) {
+bool GodotSteam::restartAppIfNecessary(uint64_t value) {
   return SteamAPI_RestartAppIfNecessary((AppId_t)value);
 }
 
 // Initialize Steamworks
-int GodotSteam::steamInit(uint32 appID, bool force) {
+uint64_t GodotSteam::steamInit(uint32 appID, bool force) {
   if (!force && restartAppIfNecessary(appID)) {
     return STEAM_INIT_NO_CLIENT_ERROR;
   }
@@ -52,31 +56,31 @@ int GodotSteam::steamInit(uint32 appID, bool force) {
   return STEAM_INIT_OK;
 }
 
-bool GodotSteam::hasOtherApp(int value) {
+bool GodotSteam::hasOtherApp(uint64_t value) {
   STEAM_FAIL_COND_V(!isSteamAppReady(), false);
 
   return SteamApps()->BIsSubscribedApp((AppId_t)value);
 }
 
-int GodotSteam::getDLCCount() {
+uint64_t GodotSteam::getDLCCount() {
   STEAM_FAIL_COND_V(!isSteamAppReady(), false);
 
   return SteamApps()->GetDLCCount();
 }
 
-bool GodotSteam::isDLCInstalled(int value) {
+bool GodotSteam::isDLCInstalled(uint64_t value) {
   STEAM_FAIL_COND_V(!isSteamAppReady(), false);
 
   return SteamApps()->BIsDlcInstalled(value);
 }
 
-void GodotSteam::requestAppProofOfPurchaseKey(int value) {
+void GodotSteam::requestAppProofOfPurchaseKey(uint64_t value) {
   STEAM_FAIL_COND(!isSteamAppReady());
 
   SteamApps()->RequestAppProofOfPurchaseKey(value);
 }
 
-bool GodotSteam::isAppInstalled(int value) {
+bool GodotSteam::isAppInstalled(uint64_t value) {
   STEAM_FAIL_COND_V(!isSteamAppReady(), false);
 
   return SteamApps()->BIsAppInstalled((AppId_t)value);
@@ -106,7 +110,7 @@ bool GodotSteam::isVACBanned() {
   return SteamApps()->BIsVACBanned();
 }
 
-int GodotSteam::getEarliestPurchaseUnixTime(int value) {
+uint64_t GodotSteam::getEarliestPurchaseUnixTime(uint64_t value) {
   STEAM_FAIL_COND_V(!isSteamAppReady(), 0);
 
   return SteamApps()->GetEarliestPurchaseUnixTime((AppId_t)value);
@@ -118,12 +122,12 @@ bool GodotSteam::isSubscribedFromFreeWeekend() {
   return SteamApps()->BIsSubscribedFromFreeWeekend();
 }
 
-void GodotSteam::installDLC(int value) {
+void GodotSteam::installDLC(uint64_t value) {
   STEAM_FAIL_COND(!isSteamAppReady());
 
   SteamApps()->InstallDLC((AppId_t)value);
 }
-void GodotSteam::uninstallDLC(int value) {
+void GodotSteam::uninstallDLC(uint64_t value) {
   STEAM_FAIL_COND(!isSteamAppReady());
 
   SteamApps()->UninstallDLC((AppId_t)value);
@@ -144,34 +148,34 @@ void GodotSteam::_low_power(LowBatteryPower_t *timeLeft) {
 }
 
 void GodotSteam::_dlc_installed(DlcInstalled_t *callData) {
-  int appID = (AppId_t)callData->m_nAppID;
+  uint64_t appID = (AppId_t)callData->m_nAppID;
   emit_signal("dlc_installed", appID);
 }
 
 void GodotSteam::_bind_methods() {
-  ObjectTypeDB::bind_method("restartAppIfNecessary",
+  ClassDB::bind_method("restartAppIfNecessary",
                             &GodotSteam::restartAppIfNecessary);
-  ObjectTypeDB::bind_method("steamInit", &GodotSteam::steamInit);
-  ObjectTypeDB::bind_method("isSteamRunning", &GodotSteam::isSteamRunning);
-  ObjectTypeDB::bind_method("run_callbacks", &GodotSteam::run_callbacks);
+  ClassDB::bind_method("steamInit", &GodotSteam::steamInit);
+  ClassDB::bind_method("isSteamRunning", &GodotSteam::isSteamRunning);
+  ClassDB::bind_method("run_callbacks", &GodotSteam::run_callbacks);
 
-  ObjectTypeDB::bind_method("hasOtherApp", &GodotSteam::hasOtherApp);
-  ObjectTypeDB::bind_method("getDLCCount", &GodotSteam::getDLCCount);
-  ObjectTypeDB::bind_method("isDLCInstalled", &GodotSteam::isDLCInstalled);
-  ObjectTypeDB::bind_method("requestAppProofOfPurchaseKey",
+  ClassDB::bind_method("hasOtherApp", &GodotSteam::hasOtherApp);
+  ClassDB::bind_method("getDLCCount", &GodotSteam::getDLCCount);
+  ClassDB::bind_method("isDLCInstalled", &GodotSteam::isDLCInstalled);
+  ClassDB::bind_method("requestAppProofOfPurchaseKey",
                             &GodotSteam::requestAppProofOfPurchaseKey);
-  ObjectTypeDB::bind_method("isAppInstalled", &GodotSteam::isAppInstalled);
-  ObjectTypeDB::bind_method("getCurrentGameLanguage",
+  ClassDB::bind_method("isAppInstalled", &GodotSteam::isAppInstalled);
+  ClassDB::bind_method("getCurrentGameLanguage",
                             &GodotSteam::getCurrentGameLanguage);
-  ObjectTypeDB::bind_method("getCurrentBetaName",
+  ClassDB::bind_method("getCurrentBetaName",
                             &GodotSteam::getCurrentBetaName);
-  ObjectTypeDB::bind_method("isVACBanned", &GodotSteam::isVACBanned);
-  ObjectTypeDB::bind_method("getEarliestPurchaseUnixTime",
+  ClassDB::bind_method("isVACBanned", &GodotSteam::isVACBanned);
+  ClassDB::bind_method("getEarliestPurchaseUnixTime",
                             &GodotSteam::getEarliestPurchaseUnixTime);
-  ObjectTypeDB::bind_method("isSubscribedFromFreeWeekend",
+  ClassDB::bind_method("isSubscribedFromFreeWeekend",
                             &GodotSteam::isSubscribedFromFreeWeekend);
-  ObjectTypeDB::bind_method("installDLC", &GodotSteam::installDLC);
-  ObjectTypeDB::bind_method("uninstallDLC", &GodotSteam::uninstallDLC);
+  ClassDB::bind_method("installDLC", &GodotSteam::installDLC);
+  ClassDB::bind_method("uninstallDLC", &GodotSteam::uninstallDLC);
 
   // Signals //////////////////////////////////
   ADD_SIGNAL(

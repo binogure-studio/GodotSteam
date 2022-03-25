@@ -3,8 +3,10 @@
 
 #include <steam/steam_api.h>
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+
 #include "godotsteam_utils.h"
-#include "core/object.h"
 
 class GodotSteamScreenshots : public Object
 {
@@ -23,7 +25,6 @@ protected:
   static GodotSteamScreenshots *singleton;
 
 private:
-  OBJ_TYPE(GodotSteamScreenshots, Object);
-  OBJ_CATEGORY("GodotSteamScreenshots");
+  GDCLASS(GodotSteamScreenshots, Object);
 };
 #endif // GODOTSTEAMSCREENSHOTS_H

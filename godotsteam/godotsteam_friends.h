@@ -4,10 +4,10 @@
 #include <inttypes.h>
 #include <steam/steam_api.h>
 
-#include "core/object.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/dictionary.h"
 #include "scene/resources/texture.h"
-#include "core/reference.h"
-#include "core/dictionary.h"
 
 // Local dependencies
 #include "godotsteam_utils.h"
@@ -29,8 +29,7 @@ public:
   ~GodotSteamFriends();
 
   bool isSteamFriendsReady();
-  Image drawAvatar(int size, uint8 *buffer);
-  int getFriendCount();
+  uint64_t getFriendCount();
   String getPersonaName();
   String getFriendPersonaName(uint64_t steam_id);
   void setGameInfo(const String &s_key, const String &s_value);
@@ -38,7 +37,7 @@ public:
   void inviteFriend(uint64_t id, const String &conString);
   void setPlayedWith(uint64_t steam_id);
   Array getRecentPlayers();
-  void getFriendAvatar(int size = AVATAR_MEDIUM, uint64_t steam_id = 0);
+  void getFriendAvatar(uint64_t size = AVATAR_MEDIUM, uint64_t steam_id = 0);
   Array getUserSteamGroups();
   Array getUserSteamFriends();
   void activateGameOverlay(const String &type);
@@ -52,10 +51,9 @@ protected:
   static GodotSteamFriends *singleton;
 
 private:
-  STEAM_CALLBACK(GodotSteamFriends, _avatar_loaded, AvatarImageLoaded_t);
+  STEAM_CALLBACK(GodotSteamFriends, _avatar_loaded, AvatarImageLoaded_t, callbackAvatarLoaded);
 
-  OBJ_TYPE(GodotSteamFriends, Object);
-  OBJ_CATEGORY("GodotSteamFriends");
+  GDCLASS(GodotSteamFriends, Object);
 };
 
 #endif // GODOTSTEAMFRIENDS_H

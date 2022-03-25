@@ -39,7 +39,7 @@ float GodotSteamUserstats::getStatFloat(const String &s_key) {
   return statval;
 }
 
-int GodotSteamUserstats::getStatInt(const String &s_key) {
+uint64_t GodotSteamUserstats::getStatInt(const String &s_key) {
   int32 statval = 0;
   SteamUserStats()->GetStat(s_key.utf8().get_data(), &statval);
   return statval;
@@ -49,7 +49,7 @@ String GodotSteamUserstats::getAchievementName(uint32 iAchievement) {
   return SteamUserStats()->GetAchievementName(iAchievement);
 }
 
-int GodotSteamUserstats::getNumAchievements() {
+uint64_t GodotSteamUserstats::getNumAchievements() {
   return SteamUserStats()->GetNumAchievements();
 }
 
@@ -73,7 +73,7 @@ bool GodotSteamUserstats::setStatFloat(const String &s_key, float value) {
   return SteamUserStats()->SetStat(s_key.utf8().get_data(), value);
 }
 
-bool GodotSteamUserstats::setStatInt(const String &s_key, int value) {
+bool GodotSteamUserstats::setStatInt(const String &s_key, int32 value) {
   return SteamUserStats()->SetStat(s_key.utf8().get_data(), value);
 }
 
@@ -117,14 +117,14 @@ String GodotSteamUserstats::getLeaderboardName() {
   return SteamUserStats()->GetLeaderboardName(leaderboardHandle);
 }
 
-int GodotSteamUserstats::getLeaderboardEntryCount() {
+uint64_t GodotSteamUserstats::getLeaderboardEntryCount() {
   STEAM_FAIL_COND_V(!isSteamUserstatsReady(), -1);
 
   return SteamUserStats()->GetLeaderboardEntryCount(leaderboardHandle);
 }
 
-void GodotSteamUserstats::downloadLeaderboardEntries(int rStart, int rEnd,
-                                                     int type) {
+void GodotSteamUserstats::downloadLeaderboardEntries(uint64_t rStart, uint64_t rEnd,
+                                                     uint64_t type) {
   if (!isSteamUserstatsReady()) {
     emit_signal("leaderboard_entries_load_failed", "Steam user stats not initialized");
 
@@ -141,7 +141,7 @@ void GodotSteamUserstats::downloadLeaderboardEntries(int rStart, int rEnd,
                         &GodotSteamUserstats::OnLeaderboardEntriesLoaded);
 }
 
-void GodotSteamUserstats::uploadLeaderboardScore(int score, bool keepBest) {
+void GodotSteamUserstats::uploadLeaderboardScore(uint64_t score, bool keepBest) {
   if (!isSteamUserstatsReady()) {
     emit_signal("leaderboard_upload_failed", "Steam user stats not initialized");
 
@@ -152,7 +152,7 @@ void GodotSteamUserstats::uploadLeaderboardScore(int score, bool keepBest) {
       leaderboardHandle,
       (keepBest) ? k_ELeaderboardUploadScoreMethodKeepBest
                  : k_ELeaderboardUploadScoreMethodForceUpdate,
-      (int)score, NULL, 0);
+      (uint64_t)score, NULL, 0);
   callResultUploadScore.Set(apiCall, this, &GodotSteamUserstats::OnUploadScore);
 }
 
@@ -194,11 +194,11 @@ void GodotSteamUserstats::OnLeaderboardEntriesLoaded(
 }
 
 void GodotSteamUserstats::getDownloadedLeaderboardEntry(
-    SteamLeaderboardEntries_t eHandle, int entryCount) {
+    SteamLeaderboardEntries_t eHandle, uint64_t entryCount) {
   STEAM_FAIL_COND(!isSteamUserstatsReady());
 
   leaderboard_entries.clear();
-  for (int index = 0; index < entryCount; index++) {
+  for (uint64_t index = 0; index < entryCount; index++) {
     LeaderboardEntry_t entry;
 
     SteamUserStats()->GetDownloadedLeaderboardEntry(eHandle, index, &entry,
@@ -245,8 +245,8 @@ Dictionary GodotSteamUserstats::getAchievementAndUnlockTime(const String &name) 
 }
 
 bool GodotSteamUserstats::indicateAchievementProgress(const String &name,
-                                                      int curProgress,
-                                                      int maxProgress) {
+                                                      uint64_t curProgress,
+                                                      uint64_t maxProgress) {
   STEAM_FAIL_COND_V(!isSteamUserstatsReady(), 0);
 
   return SteamUserStats()->IndicateAchievementProgress(
@@ -254,40 +254,40 @@ bool GodotSteamUserstats::indicateAchievementProgress(const String &name,
 }
 
 void GodotSteamUserstats::_bind_methods() {
-  ObjectTypeDB::bind_method("clearAchievement",
+  ClassDB::bind_method("clearAchievement",
                             &GodotSteamUserstats::clearAchievement);
-  ObjectTypeDB::bind_method("getAchievement",
+  ClassDB::bind_method("getAchievement",
                             &GodotSteamUserstats::getAchievement);
-  ObjectTypeDB::bind_method("getStatFloat", &GodotSteamUserstats::getStatFloat);
-  ObjectTypeDB::bind_method("getStatInt", &GodotSteamUserstats::getStatInt);
-  ObjectTypeDB::bind_method("getAchievementName", &GodotSteamUserstats::getAchievementName);
-  ObjectTypeDB::bind_method("getNumAchievements", &GodotSteamUserstats::getNumAchievements);
-  ObjectTypeDB::bind_method("resetAllStats",
+  ClassDB::bind_method("getStatFloat", &GodotSteamUserstats::getStatFloat);
+  ClassDB::bind_method("getStatInt", &GodotSteamUserstats::getStatInt);
+  ClassDB::bind_method("getAchievementName", &GodotSteamUserstats::getAchievementName);
+  ClassDB::bind_method("getNumAchievements", &GodotSteamUserstats::getNumAchievements);
+  ClassDB::bind_method("resetAllStats",
                             &GodotSteamUserstats::resetAllStats);
-  ObjectTypeDB::bind_method("requestCurrentStats",
+  ClassDB::bind_method("requestCurrentStats",
                             &GodotSteamUserstats::requestCurrentStats);
-  ObjectTypeDB::bind_method("setAchievement",
+  ClassDB::bind_method("setAchievement",
                             &GodotSteamUserstats::setAchievement);
-  ObjectTypeDB::bind_method("setStatFloat", &GodotSteamUserstats::setStatFloat);
-  ObjectTypeDB::bind_method("setStatInt", &GodotSteamUserstats::setStatInt);
-  ObjectTypeDB::bind_method("storeStats", &GodotSteamUserstats::storeStats);
-  ObjectTypeDB::bind_method(_MD("findLeaderboard", "name"),
+  ClassDB::bind_method("setStatFloat", &GodotSteamUserstats::setStatFloat);
+  ClassDB::bind_method("setStatInt", &GodotSteamUserstats::setStatInt);
+  ClassDB::bind_method("storeStats", &GodotSteamUserstats::storeStats);
+  ClassDB::bind_method(D_METHOD("findLeaderboard", "name"),
                             &GodotSteamUserstats::findLeaderboard);
-  ObjectTypeDB::bind_method("getLeaderboardName",
+  ClassDB::bind_method("getLeaderboardName",
                             &GodotSteamUserstats::getLeaderboardName);
-  ObjectTypeDB::bind_method("getLeaderboardEntryCount",
+  ClassDB::bind_method("getLeaderboardEntryCount",
                             &GodotSteamUserstats::getLeaderboardEntryCount);
-  ObjectTypeDB::bind_method(
-      _MD("downloadLeaderboardEntries", "range_start", "range_end", "type"),
+  ClassDB::bind_method(
+      D_METHOD("downloadLeaderboardEntries", "range_start", "range_end", "type"),
       &GodotSteamUserstats::downloadLeaderboardEntries, DEFVAL(LEADERBOARD_GLOBAL));
-  ObjectTypeDB::bind_method(_MD("uploadLeaderboardScore", "score", "keep_best"),
+  ClassDB::bind_method(D_METHOD("uploadLeaderboardScore", "score", "keep_best"),
                             &GodotSteamUserstats::uploadLeaderboardScore,
                             DEFVAL(true));
-  ObjectTypeDB::bind_method("getLeaderboardEntries",
+  ClassDB::bind_method("getLeaderboardEntries",
                             &GodotSteamUserstats::getLeaderboardEntries);
-  ObjectTypeDB::bind_method("getAchievementAndUnlockTime",
+  ClassDB::bind_method("getAchievementAndUnlockTime",
                             &GodotSteamUserstats::getAchievementAndUnlockTime);
-  ObjectTypeDB::bind_method("indicateAchievementProgress",
+  ClassDB::bind_method("indicateAchievementProgress",
                             &GodotSteamUserstats::indicateAchievementProgress);
 
   ADD_SIGNAL(MethodInfo("leaderboard_loaded", PropertyInfo(Variant::INT, "leaderboard_name")));

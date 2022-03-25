@@ -4,9 +4,10 @@
 #include <inttypes.h>
 #include <steam/steam_api.h>
 
-#include "core/object.h"
-#include "core/reference.h"
-#include "core/dictionary.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/dictionary.h"
+
 #include "godotsteam_utils.h"
 
 class GodotSteamMusic : public Object
@@ -33,7 +34,6 @@ protected:
   static GodotSteamMusic *singleton;
 
 private:
-  OBJ_TYPE(GodotSteamMusic, Object);
-  OBJ_CATEGORY("GodotSteamMusic");
+  GDCLASS(GodotSteamMusic, Object);
 };
 #endif // GODOTSTEAMMUSIC_H

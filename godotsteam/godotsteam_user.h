@@ -6,9 +6,9 @@
 
 #include "core/io/ip.h"
 #include "core/io/ip_address.h"
-#include "core/dictionary.h"
-#include "core/object.h"
-#include "core/reference.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/dictionary.h"
 #include "scene/resources/texture.h"
 
 // Local dependencies
@@ -24,19 +24,18 @@ public:
   ~GodotSteamUser();
 
   bool isSteamUserReady();
-  int getSteamID();
+  uint64_t getSteamID();
   bool loggedOn();
-  int getPlayerSteamLevel();
+  uint64_t getPlayerSteamLevel();
   String getUserDataFolder();
-  void advertiseGame(const String &server_ip, int port);
-  int getGameBadgeLevel(int series, bool foil);
+  void advertiseGame(const String &server_ip, uint64_t port);
+  uint64_t getGameBadgeLevel(uint64_t series, bool foil);
 
 protected:
   static void _bind_methods();
   static GodotSteamUser *singleton;
 
 private:
-  OBJ_TYPE(GodotSteamUser, Object);
-  OBJ_CATEGORY("GodotSteamUser");
+  GDCLASS(GodotSteamUser, Object);
 };
 #endif // GODOTSTEAMUSER_H

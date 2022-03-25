@@ -22,7 +22,7 @@ void GodotSteamUser::reset_singleton() {
 
 bool GodotSteamUser::isSteamUserReady() { return SteamUser() != NULL; }
 
-int GodotSteamUser::getSteamID() {
+uint64_t GodotSteamUser::getSteamID() {
   STEAM_FAIL_COND_V(!isSteamUserReady(), 0);
 
   CSteamID cSteamID = SteamUser()->GetSteamID();
@@ -36,7 +36,7 @@ bool GodotSteamUser::loggedOn() {
   return SteamUser()->BLoggedOn();
 }
 
-int GodotSteamUser::getPlayerSteamLevel() {
+uint64_t GodotSteamUser::getPlayerSteamLevel() {
   STEAM_FAIL_COND_V(!isSteamUserReady(), 0);
 
   return SteamUser()->GetPlayerSteamLevel();
@@ -45,7 +45,7 @@ int GodotSteamUser::getPlayerSteamLevel() {
 String GodotSteamUser::getUserDataFolder() {
   STEAM_FAIL_COND_V(!isSteamUserReady(), "");
 
-  const int bufferSize = 256;
+  const uint64_t bufferSize = 256;
   char *buffer = new char[bufferSize];
   SteamUser()->GetUserDataFolder((char *)buffer, bufferSize);
   String data_path = buffer;
@@ -53,24 +53,24 @@ String GodotSteamUser::getUserDataFolder() {
   return data_path;
 }
 
-void GodotSteamUser::advertiseGame(const String &server_ip, int port) {
+void GodotSteamUser::advertiseGame(const String &server_ip, uint64_t port) {
   STEAM_FAIL_COND(!isSteamUserReady());
 
-  // Resolve address and convert it from IP_Address struct to uint32_t
-  IP_Address addr;
+  // Resolve address and convert it from IPAddress struct to uint32_t
+  IPAddress addr;
   if (server_ip.is_valid_ip_address()) {
     addr = server_ip;
   } else {
     addr = IP::get_singleton()->resolve_hostname(server_ip, IP::TYPE_IPV4);
   }
   // Resolution failed - Godot 3.0 has is_invalid() to check this
-  if (addr == IP_Address()) {
+  if (addr == IPAddress()) {
     return;
   }
   uint32_t ip4 = *((uint32_t *)addr.get_ipv4());
   // Swap the bytes
   uint8_t *ip4_p = (uint8_t *)&ip4;
-  for (int index = 0; index < 2; index++) {
+  for (uint64_t index = 0; index < 2; index++) {
     uint8_t temp = ip4_p[index];
     ip4_p[index] = ip4_p[3 - index];
     ip4_p[3 - index] = temp;
@@ -82,21 +82,21 @@ void GodotSteamUser::advertiseGame(const String &server_ip, int port) {
 // Trading Card badges data access, if you only have one set of cards, the
 // series will be 1 The user has can have two different badges for a series; the
 // regular (max level 5) and the foil (max level 1)
-int GodotSteamUser::getGameBadgeLevel(int series, bool foil) {
+uint64_t GodotSteamUser::getGameBadgeLevel(uint64_t series, bool foil) {
   STEAM_FAIL_COND_V(!isSteamUserReady(), 0);
 
   return SteamUser()->GetGameBadgeLevel(series, foil);
 }
 
 void GodotSteamUser::_bind_methods() {
-  ObjectTypeDB::bind_method("getSteamID", &GodotSteamUser::getSteamID);
-  ObjectTypeDB::bind_method("loggedOn", &GodotSteamUser::loggedOn);
-  ObjectTypeDB::bind_method("getPlayerSteamLevel",
+  ClassDB::bind_method("getSteamID", &GodotSteamUser::getSteamID);
+  ClassDB::bind_method("loggedOn", &GodotSteamUser::loggedOn);
+  ClassDB::bind_method("getPlayerSteamLevel",
                             &GodotSteamUser::getPlayerSteamLevel);
-  ObjectTypeDB::bind_method("getUserDataFolder",
+  ClassDB::bind_method("getUserDataFolder",
                             &GodotSteamUser::getUserDataFolder);
-  ObjectTypeDB::bind_method(_MD("advertiseGame", "server_ip", "port"),
+  ClassDB::bind_method(D_METHOD("advertiseGame", "server_ip", "port"),
                             &GodotSteamUser::advertiseGame);
-  ObjectTypeDB::bind_method("getGameBadgeLevel",
+  ClassDB::bind_method("getGameBadgeLevel",
                             &GodotSteamUser::getGameBadgeLevel);
 }

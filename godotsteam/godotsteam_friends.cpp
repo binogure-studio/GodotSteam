@@ -2,7 +2,12 @@
 
 GodotSteamFriends *GodotSteamFriends::singleton = NULL;
 
-GodotSteamFriends::GodotSteamFriends() { singleton = this; }
+GodotSteamFriends::GodotSteamFriends():
+  callbackAvatarLoaded(this, &GodotSteamFriends::_avatar_loaded)
+{
+    singleton = this;
+}
+
 GodotSteamFriends::~GodotSteamFriends() { singleton = NULL; }
 
 GodotSteamFriends *GodotSteamFriends::get_singleton() {
@@ -21,7 +26,7 @@ void GodotSteamFriends::reset_singleton() {
 
 bool GodotSteamFriends::isSteamFriendsReady() { return SteamFriends() != NULL; }
 
-int GodotSteamFriends::getFriendCount() {
+uint64_t GodotSteamFriends::getFriendCount() {
   STEAM_FAIL_COND_V(!isSteamFriendsReady(), 0);
 
   return SteamFriends()->GetFriendCount(0x04);
@@ -85,17 +90,17 @@ void GodotSteamFriends::setPlayedWith(uint64_t steamID) {
 Array GodotSteamFriends::getRecentPlayers() {
   STEAM_FAIL_COND_V(!isSteamFriendsReady(), Array());
 
-  int rCount = SteamFriends()->GetCoplayFriendCount();
+  uint64_t rCount = SteamFriends()->GetCoplayFriendCount();
   Array recents;
 
-  for (int index = 0; index < rCount; index++) {
+  for (uint64_t index = 0; index < rCount; index++) {
     CSteamID rPlayerID = SteamFriends()->GetCoplayFriend(index);
 
     if (SteamFriends()->GetFriendCoplayGame(rPlayerID) ==
         SteamUtils()->GetAppID()) {
       Dictionary rPlayer;
       String rName = SteamFriends()->GetFriendPersonaName(rPlayerID);
-      int rStatus = SteamFriends()->GetFriendPersonaState(rPlayerID);
+      uint64_t rStatus = SteamFriends()->GetFriendPersonaState(rPlayerID);
 
       rPlayer["id"] = rPlayerID.GetAccountID();
       rPlayer["name"] = rName;
@@ -108,7 +113,7 @@ Array GodotSteamFriends::getRecentPlayers() {
   return recents;
 }
 
-void GodotSteamFriends::getFriendAvatar(int size, uint64_t steam_id) {
+void GodotSteamFriends::getFriendAvatar(uint64_t size, uint64_t steam_id) {
   STEAM_FAIL_COND(size < AVATAR_SMALL || size > AVATAR_LARGE || !isSteamFriendsReady());
 
   if (steam_id == 0) {
@@ -116,7 +121,7 @@ void GodotSteamFriends::getFriendAvatar(int size, uint64_t steam_id) {
   }
 
   CSteamID avatar_id = GodotSteamUtils::get_singleton()->createSteamID(steam_id);
-  int iHandle = 0;
+  uint64_t iHandle = 0;
 
   switch (size) {
   case AVATAR_SMALL:
@@ -159,51 +164,22 @@ void GodotSteamFriends::getFriendAvatar(int size, uint64_t steam_id) {
 // Signal that the avatar has been loaded
 void GodotSteamFriends::_avatar_loaded(AvatarImageLoaded_t *avatarData) {
 
-  int size = avatarData->m_iWide;
-  // Get image buffer
-  int buffSize = 4 * size * size;
-  uint8 *iBuffer = new uint8[buffSize];
-  bool success = SteamUtils()->GetImageRGBA(avatarData->m_iImage, iBuffer, buffSize);
+  uint32 width, height;
+  bool success = SteamUtils()->GetImageSize(avatarData->m_iImage, &width, &height);
+  if(!success){
+    printf("[Steam] Failed to get image size.\n");
+    return;
+  }
+
+  PackedByteArray data;
+  data.resize(width * height * 4);
+  success = SteamUtils()->GetImageRGBA(avatarData->m_iImage, data.ptrw(), data.size());
   if (!success) {
     printf("[Steam] Failed to load image buffer from callback\n");
     return;
   }
-  int rSize;
 
-  if (size == 32) {
-    rSize = AVATAR_SMALL;
-  } else if (size == 64) {
-    rSize = AVATAR_MEDIUM;
-  } else if (size == 184) {
-    rSize = AVATAR_LARGE;
-  } else {
-    printf("[Steam] Invalid avatar size from callback\n");
-    return;
-  }
-
-  Image avatar = drawAvatar(size, iBuffer);
-  call_deferred("emit_signal", "avatar_loaded", rSize, (uint32_t) avatarData->m_steamID.ConvertToUint64(), avatar);
-}
-
-// Draw the given avatar
-Image GodotSteamFriends::drawAvatar(int iSize, uint8 *iBuffer) {
-
-  // Apply buffer to Image
-  Image avatar(iSize, iSize, false, Image::FORMAT_RGBA);
-  for (int y = 0; y < iSize; y++) {
-    for (int x = 0; x < iSize; x++) {
-      int index = 4 * (x + y * iSize);
-
-      float r = float(iBuffer[index]) / 255;
-      float g = float(iBuffer[index + 1]) / 255;
-      float b = float(iBuffer[index + 2]) / 255;
-      float a = float(iBuffer[index + 3]) / 255;
-
-      avatar.put_pixel(x, y, Color(r, g, b, a));
-    }
-  }
-
-  return avatar;
+  call_deferred("emit_signal", "avatar_loaded", (uint64_t) avatarData->m_steamID.ConvertToUint64(), data.ptr());
 }
 
 void GodotSteamFriends::activateGameOverlay(const String &url) {
@@ -237,10 +213,10 @@ void GodotSteamFriends::activateGameOverlayToStore(AppId_t app_id) {
 Array GodotSteamFriends::getUserSteamGroups() {
   STEAM_FAIL_COND_V(!isSteamFriendsReady(), Array());
 
-  int groupCount = SteamFriends()->GetClanCount();
+  uint64_t groupCount = SteamFriends()->GetClanCount();
   Array steamGroups;
 
-  for (int index = 0; index < groupCount; index++) {
+  for (uint64_t index = 0; index < groupCount; index++) {
 
     Dictionary groups;
     CSteamID groupID = SteamFriends()->GetClanByIndex(index);
@@ -258,14 +234,14 @@ Array GodotSteamFriends::getUserSteamGroups() {
 Array GodotSteamFriends::getUserSteamFriends() {
   STEAM_FAIL_COND_V(!isSteamFriendsReady(), Array());
 
-  int fCount = SteamFriends()->GetFriendCount(0x04);
+  uint64_t fCount = SteamFriends()->GetFriendCount(0x04);
   Array steamFriends;
 
-  for (int index = 0; index < fCount; index++) {
+  for (uint64_t index = 0; index < fCount; index++) {
     Dictionary friends;
     CSteamID friendID = SteamFriends()->GetFriendByIndex(index, 0x04);
     String fName = SteamFriends()->GetFriendPersonaName(friendID);
-    int fStatus = SteamFriends()->GetFriendPersonaState(friendID);
+    uint64_t fStatus = SteamFriends()->GetFriendPersonaState(friendID);
     friends["id"] = friendID.GetAccountID();
     friends["name"] = fName;
     friends["status"] = fStatus;
@@ -283,48 +259,47 @@ void GodotSteamFriends::activateGameOverlayInviteDialog(uint64_t steamID) {
 }
 
 void GodotSteamFriends::_bind_methods() {
-  ObjectTypeDB::bind_method("getFriendCount",
+  ClassDB::bind_method("getFriendCount",
                             &GodotSteamFriends::getFriendCount);
-  ObjectTypeDB::bind_method("getPersonaName",
+  ClassDB::bind_method("getPersonaName",
                             &GodotSteamFriends::getPersonaName);
-  ObjectTypeDB::bind_method("getFriendPersonaName",
+  ClassDB::bind_method("getFriendPersonaName",
                             &GodotSteamFriends::getFriendPersonaName);
-  ObjectTypeDB::bind_method(_MD("setGameInfo", "key", "value"),
+  ClassDB::bind_method(D_METHOD("setGameInfo", "key", "value"),
                             &GodotSteamFriends::setGameInfo);
-  ObjectTypeDB::bind_method(_MD("clearGameInfo"),
+  ClassDB::bind_method(D_METHOD("clearGameInfo"),
                             &GodotSteamFriends::clearGameInfo);
-  ObjectTypeDB::bind_method(_MD("inviteFriend", "steam_id", "connect_string"),
+  ClassDB::bind_method(D_METHOD("inviteFriend", "steam_id", "connect_string"),
                             &GodotSteamFriends::inviteFriend);
-  ObjectTypeDB::bind_method(_MD("setPlayedWith", "steam_id"),
+  ClassDB::bind_method(D_METHOD("setPlayedWith", "steam_id"),
                             &GodotSteamFriends::setPlayedWith);
-  ObjectTypeDB::bind_method("getRecentPlayers",
+  ClassDB::bind_method("getRecentPlayers",
                             &GodotSteamFriends::getRecentPlayers);
-  ObjectTypeDB::bind_method(_MD("getFriendAvatar", "size", "steam_id"),
+  ClassDB::bind_method(D_METHOD("getFriendAvatar", "size", "steam_id"),
                             &GodotSteamFriends::getFriendAvatar,
                             DEFVAL(AVATAR_MEDIUM),
                             DEFVAL(0));
-  ObjectTypeDB::bind_method("getUserSteamGroups",
+  ClassDB::bind_method("getUserSteamGroups",
                             &GodotSteamFriends::getUserSteamGroups);
-  ObjectTypeDB::bind_method("getUserSteamFriends",
+  ClassDB::bind_method("getUserSteamFriends",
                             &GodotSteamFriends::getUserSteamFriends);
-  ObjectTypeDB::bind_method(_MD("activateGameOverlay", "type"),
+  ClassDB::bind_method(D_METHOD("activateGameOverlay", "type"),
                             &GodotSteamFriends::activateGameOverlay,
                             DEFVAL(""));
-  ObjectTypeDB::bind_method(
-      _MD("activateGameOverlayToUser", "type", "steam_id"),
+  ClassDB::bind_method(
+      D_METHOD("activateGameOverlayToUser", "type", "steam_id"),
       &GodotSteamFriends::activateGameOverlayToUser, DEFVAL(""));
-  ObjectTypeDB::bind_method(_MD("activateGameOverlayToWebPage", "url"),
+  ClassDB::bind_method(D_METHOD("activateGameOverlayToWebPage", "url"),
                             &GodotSteamFriends::activateGameOverlayToWebPage);
-  ObjectTypeDB::bind_method(_MD("activateGameOverlayToStore", "appID"),
+  ClassDB::bind_method(D_METHOD("activateGameOverlayToStore", "appID"),
                             &GodotSteamFriends::activateGameOverlayToStore,
                             DEFVAL(0));
-  ObjectTypeDB::bind_method(
-      _MD("activateGameOverlayInviteDialog", "steam_id"),
+  ClassDB::bind_method(
+      D_METHOD("activateGameOverlayInviteDialog", "steam_id"),
       &GodotSteamFriends::activateGameOverlayInviteDialog);
 
   ADD_SIGNAL(MethodInfo("avatar_loaded", PropertyInfo(Variant::INT, "steamID"),
-                        PropertyInfo(Variant::INT, "size"),
-                        PropertyInfo(Variant::IMAGE, "avatar")));
+                        PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data")));
 
   BIND_CONSTANT(AVATAR_SMALL);
   BIND_CONSTANT(AVATAR_MEDIUM);

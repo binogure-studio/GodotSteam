@@ -3,8 +3,10 @@
 
 #include <steam/steam_api.h>
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+
 #include "godotsteam_utils.h"
-#include "core/object.h"
 
 class GodotSteamWorkshop: public Object
 {
@@ -21,33 +23,33 @@ public:
   void addDependency(uint64_t publishedFileID, uint64_t childPublishedFileID);
   bool addExcludedTag(uint64_t queryHandle, const String& tagName);
   bool addItemKeyValueTag(uint64_t updateHandle, const String& key, const String& value);
-  bool addItemPreviewFile(uint64_t queryHandle, const String& previewFile, int type);
+  bool addItemPreviewFile(uint64_t queryHandle, const String& previewFile, uint64_t type);
   bool addItemPreviewVideo(uint64_t queryHandle, const String& videoID);
   void addItemToFavorite(uint32 appID, uint64_t publishedFileID);
   bool addRequiredKeyValueTag(uint64_t queryHandle, const String& key, const String& value);
   bool addRequiredTag(uint64_t queryHandle, const String& tagName);
 
   void commitItemUpdate(uint64_t updateHandle, const String& note);
-  void createItem(uint32 appID, int fileType);
-  void createQueryAllUGCRequest(int queryType, int matchingType, uint32 creatorID, int page);
+  void createItem(uint32 appID, uint64_t fileType);
+  void createQueryAllUGCRequest(uint64_t queryType, uint64_t matchingType, uint32 creatorID, uint64_t page);
   void createQueryUGCDetailsRequest(Array publishedFileIDs);
-  void createQueryUserUGCRequest(AccountID_t accountID, int listType, uint32 creatorID, uint32 page);
+  void createQueryUserUGCRequest(AccountID_t accountID, uint64_t listType, uint32 creatorID, uint32 page);
 
   void deleteItem(uint64_t publishedFileID);
   bool downloadItem(uint64_t nPublishedFileID, bool bHighPriority);
 
   Dictionary getItemDownloadInfo(uint64_t publishedFileID);
-  int getNumSubscribedItems();
-  int getItemState(uint64_t publishedFileID);
-  Dictionary getQueryUGCAdditionalPreview(uint64_t queryHandle, int index, int previewIndex);
-  Dictionary getQueryUGCChildren(uint64_t queryHandle, int index, int numChildren);
-  Dictionary getQueryUGCKeyValueTag(uint64_t queryHandle, int index, int keyValueTagIndex);
-  String getQueryUGCMetadata(uint64_t queryHandle, int index);
-  int getQueryUGCNumAdditionalPreviews(uint64_t queryHandle, int index);
-  int getQueryUGCNumKeyValueTags(uint64_t queryHandle, int index);
-  String getQueryUGCPreviewURL(uint64_t queryHandle, int index);
-  Dictionary getQueryUGCResult(uint64_t queryHandle, int index);
-  Dictionary getQueryUGCStatistic(uint64_t queryHandle, int index, int statType);
+  uint64_t getNumSubscribedItems();
+  uint64_t getItemState(uint64_t publishedFileID);
+  Dictionary getQueryUGCAdditionalPreview(uint64_t queryHandle, uint64_t index, uint64_t previewIndex);
+  Dictionary getQueryUGCChildren(uint64_t queryHandle, uint64_t index, uint64_t numChildren);
+  Dictionary getQueryUGCKeyValueTag(uint64_t queryHandle, uint64_t index, uint64_t keyValueTagIndex);
+  String getQueryUGCMetadata(uint64_t queryHandle, uint64_t index);
+  uint64_t getQueryUGCNumAdditionalPreviews(uint64_t queryHandle, uint64_t index);
+  uint64_t getQueryUGCNumKeyValueTags(uint64_t queryHandle, uint64_t index);
+  String getQueryUGCPreviewURL(uint64_t queryHandle, uint64_t index);
+  Dictionary getQueryUGCResult(uint64_t queryHandle, uint64_t index);
+  Dictionary getQueryUGCStatistic(uint64_t queryHandle, uint64_t index, uint64_t statType);
   Dictionary getItemInstallInfo(uint64_t publishedFileID);
   Dictionary getItemUpdateProgress(uint64_t updateHandle);
   Array getSubscribedItems();
@@ -60,7 +62,7 @@ public:
   void removeDependency(uint64_t publishedFileID, uint64_t childPublishedFileID);
   void removeItemFromFavorites(uint32 appID, uint64_t publishedFileID);
   bool removeItemKeyValueTags(uint64_t updateHandle, const String& key);
-  bool removeItemPreview(uint64_t updateHandle, int index);
+  bool removeItemPreview(uint64_t updateHandle, uint64_t index);
 
   bool setItemContent(uint64_t updateHandle, const String& contentFolder);
   bool setItemDescription(uint64_t updateHandle, const String& description);
@@ -69,7 +71,7 @@ public:
   bool setItemTags(uint64_t updateHandle, Array tagArray);
   bool setItemTitle(uint64_t updateHandle, const String& title);
   bool setItemUpdateLanguage(uint64_t updateHandle, const String& language);
-  bool setItemVisibility(uint64_t updateHandle, int visibility);
+  bool setItemVisibility(uint64_t updateHandle, uint64_t visibility);
   bool setLanguage(uint64_t queryHandle, const String& language);
 
   uint64_t startItemUpdate(uint32 appID, uint64_t publishedFileID);
@@ -77,7 +79,7 @@ public:
   void subscribeItem(uint64_t publishedFileID);
   void suspendDownloads(bool bSuspend);
 
-  bool updateItemPreviewFile(uint64_t updateHandle, int index, const String& previewFile);
+  bool updateItemPreviewFile(uint64_t updateHandle, uint64_t index, const String& previewFile);
   void unsubscribeItem(uint64_t publishedFileID);
 
 protected:
@@ -133,11 +135,9 @@ private:
   void _item_unsubscribed(RemoteStorageUnsubscribePublishedFileResult_t *callData, bool bIOFailure);
   CCallResult<GodotSteamWorkshop, RemoteStorageUnsubscribePublishedFileResult_t> callResultItemUnsubscribed;
 
+  STEAM_CALLBACK(GodotSteamWorkshop, _item_downloaded, DownloadItemResult_t, callbackItemDownloaded);
+  STEAM_CALLBACK(GodotSteamWorkshop, _item_installed, ItemInstalled_t, callbackItemInstalled);
 
-  STEAM_CALLBACK(GodotSteamWorkshop, _item_downloaded, DownloadItemResult_t);
-  STEAM_CALLBACK(GodotSteamWorkshop, _item_installed, ItemInstalled_t);
-
-  OBJ_TYPE(GodotSteamWorkshop, Object);
-  OBJ_CATEGORY("GodotSteamWorkshop");
+  GDCLASS(GodotSteamWorkshop, Object);
 };
 #endif // GODOTSTEAMWORKSHOP_H

@@ -6,19 +6,20 @@
 
 #include "core/io/ip.h"
 #include "core/io/ip_address.h"
-#include "core/dictionary.h"
-#include "godotsteam_utils.h"
-#include "core/object.h"
-#include "core/reference.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/dictionary.h"
 #include "scene/resources/texture.h"
+
+#include "godotsteam_utils.h"
 
 class GodotSteamUserstats: public Object
 {
 public:
   enum {
-    LEADERBOARD_GLOBAL = (int)k_ELeaderboardDataRequestGlobal,
-    LEADERBOARD_AROUND_USER = (int)k_ELeaderboardDataRequestGlobalAroundUser,
-    LEADERBOARD_FRIENDS = (int)k_ELeaderboardDataRequestFriends
+    LEADERBOARD_GLOBAL = (uint64_t)k_ELeaderboardDataRequestGlobal,
+    LEADERBOARD_AROUND_USER = (uint64_t)k_ELeaderboardDataRequestGlobalAroundUser,
+    LEADERBOARD_FRIENDS = (uint64_t)k_ELeaderboardDataRequestFriends
   };
 
   static GodotSteamUserstats *get_singleton();
@@ -31,27 +32,27 @@ public:
   bool clearAchievement(const String &s_key);
   bool getAchievement(const String &s_key);
   float getStatFloat(const String &s_key);
-  int getStatInt(const String &s_key);
+  uint64_t getStatInt(const String &s_key);
   bool resetAllStats(bool bAchievementsToo = true);
   bool requestCurrentStats();
   bool setAchievement(const String &s_key);
   bool setStatFloat(const String &s_key, float value);
-  bool setStatInt(const String &s_key, int value);
+  bool setStatInt(const String &s_key, int32 value);
   bool storeStats();
   void findLeaderboard(const String &lName);
   String getLeaderboardName();
   String getAchievementName(uint32 iAchievement);
-  int getNumAchievements();
-  int getLeaderboardEntryCount();
-  void downloadLeaderboardEntries(int rStart, int rEnd, int type = LEADERBOARD_GLOBAL);
+  uint64_t getNumAchievements();
+  uint64_t getLeaderboardEntryCount();
+  void downloadLeaderboardEntries(uint64_t rStart, uint64_t rEnd, uint64_t type = LEADERBOARD_GLOBAL);
   void downloadLeaderboardEntriesForUsers(Array usersID);
-  void uploadLeaderboardScore(int score, bool keepBest = false);
-  void getDownloadedLeaderboardEntry(SteamLeaderboardEntries_t eHandle, int entryCount);
+  void uploadLeaderboardScore(uint64_t score, bool keepBest = false);
+  void getDownloadedLeaderboardEntry(SteamLeaderboardEntries_t eHandle, uint64_t entryCount);
   void setLeaderboardHandle(uint64 lHandle);
   uint64 getLeaderboardHandle();
   Array getLeaderboardEntries();
   Dictionary getAchievementAndUnlockTime(const String &name);
-  bool indicateAchievementProgress(const String &name, int curProgress, int maxProgress);
+  bool indicateAchievementProgress(const String &name, uint64_t curProgress, uint64_t maxProgress);
 
 protected:
   static void _bind_methods();
@@ -70,8 +71,6 @@ private:
   void OnLeaderboardEntriesLoaded(LeaderboardScoresDownloaded_t *callData, bool bIOFailure);
   CCallResult<GodotSteamUserstats, LeaderboardScoresDownloaded_t> callResultEntries;
 
-
-  OBJ_TYPE(GodotSteamUserstats, Object);
-  OBJ_CATEGORY("GodotSteamUserstats");
+  GDCLASS(GodotSteamUserstats, Object);
 };
 #endif // GODOTSTEAMUSERSTATS_H

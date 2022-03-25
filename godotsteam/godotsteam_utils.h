@@ -4,8 +4,9 @@
 #include <inttypes.h>
 #include <steam/steam_api.h>
 
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "godotsteam_utils.h"
-#include "core/object.h"
 
 #define STEAM_FAIL_COND(m_cond) \
   {                             \
@@ -29,16 +30,16 @@ public:
   GodotSteamUtils();
   ~GodotSteamUtils();
 
-  CSteamID createSteamID(uint32 steamID, int accountType = -1);
+  CSteamID createSteamID(uint32 steamID, uint64_t accountType = -1);
   String getIPCountry();
   bool isOverlayEnabled();
   String getSteamUILanguage();
-  int getAppID();
-  int getSecondsSinceAppActive();
-  void setOverlayNotificationPosition(int pos);
-  int getCurrentBatteryPower();
+  uint64_t getAppID();
+  uint64_t getSecondsSinceAppActive();
+  void setOverlayNotificationPosition(uint64_t pos);
+  uint64_t getCurrentBatteryPower();
   bool isSteamRunningInVR();
-  int getServerRealTime();
+  uint64_t getServerRealTime();
   bool isSteamInBigPictureMode();
   void startVRDashboard();
 
@@ -47,8 +48,7 @@ protected:
   static GodotSteamUtils *singleton;
 
 private:
-  OBJ_TYPE(GodotSteamUtils, Object);
-  OBJ_CATEGORY("GodotSteamUtils");
+  GDCLASS(GodotSteamUtils, Object);
 };
 
 #endif // GODOTSTEAMUTILS_H

@@ -69,12 +69,12 @@ void GodotSteamMusic::musicSetVolume(float value) {
   return SteamMusic()->SetVolume(value);
 }
 void GodotSteamMusic::_bind_methods() {
-  ObjectTypeDB::bind_method("musicIsEnabled", &GodotSteamMusic::musicIsEnabled);
-  ObjectTypeDB::bind_method("musicIsPlaying", &GodotSteamMusic::musicIsPlaying);
-  ObjectTypeDB::bind_method("musicGetVolume", &GodotSteamMusic::musicGetVolume);
-  ObjectTypeDB::bind_method("musicPause", &GodotSteamMusic::musicPause);
-  ObjectTypeDB::bind_method("musicPlay", &GodotSteamMusic::musicPlay);
-  ObjectTypeDB::bind_method("musicPlayNext", &GodotSteamMusic::musicPlayNext);
-  ObjectTypeDB::bind_method("musicPlayPrev", &GodotSteamMusic::musicPlayPrev);
-  ObjectTypeDB::bind_method("musicSetVolume", &GodotSteamMusic::musicSetVolume);
+  ClassDB::bind_method("musicIsEnabled", &GodotSteamMusic::musicIsEnabled);
+  ClassDB::bind_method("musicIsPlaying", &GodotSteamMusic::musicIsPlaying);
+  ClassDB::bind_method("musicGetVolume", &GodotSteamMusic::musicGetVolume);
+  ClassDB::bind_method("musicPause", &GodotSteamMusic::musicPause);
+  ClassDB::bind_method("musicPlay", &GodotSteamMusic::musicPlay);
+  ClassDB::bind_method("musicPlayNext", &GodotSteamMusic::musicPlayNext);
+  ClassDB::bind_method("musicPlayPrev", &GodotSteamMusic::musicPlayPrev);
+  ClassDB::bind_method("musicSetVolume", &GodotSteamMusic::musicSetVolume);
 }

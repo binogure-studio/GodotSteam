@@ -29,5 +29,5 @@ void GodotSteamScreenshots::triggerScreenshot() {
 }
 
 void GodotSteamScreenshots::_bind_methods() {
-  ObjectTypeDB::bind_method("triggerScreenshot", &GodotSteamScreenshots::triggerScreenshot);
+  ClassDB::bind_method("triggerScreenshot", &GodotSteamScreenshots::triggerScreenshot);
 }

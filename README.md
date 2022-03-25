@@ -2,26 +2,20 @@
 
 Steam API for the Godot game engine. For the Windows, Linux, and Mac platforms. 
 
-Documentation
-----------
+## Documentation
 Refer to the code and check out the [Steam documentation](https://partner.steamgames.com/doc/api/ISteamUGC).
 
-Quick How-To
-----------
+## Quick How-To
 - Download this repository and unpack it.
 - Download and unpack the [Steamworks SDK](https://partner.steamgames.com); this requires a Steam developer account.
-- Download and unpack the [Godot source](https://github.com/xsellier/godot); branch 2.1.
+- Download and unpack the [Godot source](https://github.com/binogure-studio/GodotSteam); branch 4.0
 - Move the following to `godotsteam/sdk/`:
 ````
     sdk/public/
     sdk/redistributable_bin/
 ````
 - Now move the **godotsteam** directory into the **modules** directory of the unpacked Godot Engine source.
-- Recompile for your platform:
-  - Windows ( https://docs.godotengine.org/en/2.1/development/compiling/compiling_for_windows.html )
-  - Linux ( https://docs.godotengine.org/en/2.1/development/compiling/compiling_for_x11.html )
-  - OSX ( https://docs.godotengine.org/en/2.1/development/compiling/compiling_for_osx.html )
-    - When creating templates for this, please refer to this post for assistance as the documentation is a bit lacking ( http://steamcommunity.com/app/404790/discussions/0/364042703865087202/ ).
+- [Recompile for your platform](https://docs.godotengine.org/en/latest/development/compiling/index.html):
 - When recompiling the engine is finished, copy the shared library (steam_api) from sdk/redistributable_bin/ folders to the Godot binary location (by default in the godot source /bin/ file but you can move them to a new folder). It should look like this:
   - Linux 32/64-bit
   ```
@@ -52,6 +46,5 @@ Quick How-To
 
 From here you should be able to call various functions of Steamworks. You should be able to look up the functions in Godot itself under the search section. In addition, you should be able to read the Steamworks API documentation to see what all is available and cross-reference with GodotSteam.
 
-License
--------------
+## License
 MIT license
