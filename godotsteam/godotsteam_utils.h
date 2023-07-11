@@ -27,10 +27,15 @@ public:
   static GodotSteamUtils *get_singleton();
   static void reset_singleton();
 
+  enum {
+    GAMEPADTEST_SINGLELINE = (int)k_EFloatingGamepadTextInputModeModeSingleLine,
+    GAMEPADTEST_MULTILINES = (int)k_EFloatingGamepadTextInputModeModeMultipleLines,
+    GAMEPADTEST_EMAIL = (int)k_EFloatingGamepadTextInputModeModeEmail,
+    GAMEPADTEST_NUMERIC = (int)k_EFloatingGamepadTextInputModeModeNumeric
+  };
   GodotSteamUtils();
   ~GodotSteamUtils();
 
-  CSteamID createSteamID(uint32 steamID, uint64_t accountType = -1);
   String getIPCountry();
   bool isOverlayEnabled();
   String getSteamUILanguage();
@@ -39,6 +44,8 @@ public:
   void setOverlayNotificationPosition(uint64_t pos);
   uint64_t getCurrentBatteryPower();
   bool isSteamRunningInVR();
+  bool isRunningOnSteamDeck();
+  bool showFloatingGamepadTextInput(uint64_t keyboardMode, uint64_t inputPositionX, uint64_t inputPositionY, uint64_t inputWidth, uint64_t inputHeight);
   uint64_t getServerRealTime();
   bool isSteamInBigPictureMode();
   void startVRDashboard();

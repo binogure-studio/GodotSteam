@@ -29,6 +29,7 @@ public:
   ~GodotSteamFriends();
 
   bool isSteamFriendsReady();
+  Image drawAvatar(int size, uint8 *buffer);
   uint64_t getFriendCount();
   String getPersonaName();
   String getFriendPersonaName(uint64_t steam_id);
@@ -52,6 +53,7 @@ protected:
 
 private:
   STEAM_CALLBACK(GodotSteamFriends, _avatar_loaded, AvatarImageLoaded_t, callbackAvatarLoaded);
+  STEAM_CALLBACK(GodotSteamFriends, _game_lobby_join_requested, GameLobbyJoinRequested_t, callbackGameLobbyJoinRequested);
 
   GDCLASS(GodotSteamFriends, Object);
 };

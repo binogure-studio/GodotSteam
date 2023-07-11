@@ -408,11 +408,11 @@ Dictionary GodotSteamWorkshop::getQueryUGCKeyValueTag(uint64_t queryHandle, uint
 String GodotSteamWorkshop::getQueryUGCMetadata(uint64_t queryHandle, uint64_t index) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), "");
 
-  char *metadata = new char[k_cchDeveloperMetadataMax];
+  char *lMetadata = new char[k_cchDeveloperMetadataMax];
   
-  STEAM_FAIL_COND_V(!SteamUGC()->GetQueryUGCMetadata((UGCQueryHandle_t)queryHandle, index, (char*)metadata, k_cchDeveloperMetadataMax), "Invalid metadata");
+  STEAM_FAIL_COND_V(!SteamUGC()->GetQueryUGCMetadata((UGCQueryHandle_t)queryHandle, index, (char*)lMetadata, k_cchDeveloperMetadataMax), "Invalid metadata");
 
-  String ugcMetadata = metadata;
+  String ugcMetadata = lMetadata;
   return ugcMetadata;
 }
 // Retrieve the number of additional previews of an individual workshop item after receiving a querying UGC call result.
@@ -601,7 +601,7 @@ bool GodotSteamWorkshop::setItemContent(uint64_t updateHandle, const String& con
 bool GodotSteamWorkshop::setItemDescription(uint64_t updateHandle, const String& description) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  if (description.length() > k_cchPublishedDocumentDescriptionMax) {
+  if ((uint32_t)description.length() > k_cchPublishedDocumentDescriptionMax) {
     printf("Description cannot have more than %d ASCII characters. Description not set.", k_cchPublishedDocumentDescriptionMax);
     return false;
   }
@@ -610,15 +610,15 @@ bool GodotSteamWorkshop::setItemDescription(uint64_t updateHandle, const String&
 }
 
 // Sets arbitrary metadata for an item. This metadata can be returned from queries without having to download and install the actual content.
-bool GodotSteamWorkshop::setItemMetadata(uint64_t updateHandle, const String& metadata) {
+bool GodotSteamWorkshop::setItemMetadata(uint64_t updateHandle, const String& p_metadata) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  if (metadata.length() > k_cchDeveloperMetadataMax) {
+  if ((uint32_t)p_metadata.length() > k_cchDeveloperMetadataMax) {
     printf("Metadata cannot have more than %d ASCII characters. Metadata not set.", k_cchDeveloperMetadataMax);
     return false;
   }
 
-  return SteamUGC()->SetItemMetadata((UGCUpdateHandle_t)updateHandle, metadata.utf8().get_data());
+  return SteamUGC()->SetItemMetadata((UGCUpdateHandle_t)updateHandle, p_metadata.utf8().get_data());
 }
 
 // Sets the primary preview image for the item.
@@ -656,7 +656,7 @@ bool GodotSteamWorkshop::setItemTags(uint64_t updateHandle, Array tagArray) {
 bool GodotSteamWorkshop::setItemTitle(uint64_t updateHandle, const String& title) {
   STEAM_FAIL_COND_V(!isSteamUGCReady(), false);
 
-  if (title.length() > k_cchPublishedDocumentTitleMax) {
+  if ((uint32_t)title.length() > k_cchPublishedDocumentTitleMax) {
     printf("Title cannot have more than %d ASCII characters. Title not set.", k_cchPublishedDocumentTitleMax);
 
     return false;

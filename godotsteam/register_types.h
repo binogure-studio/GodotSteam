@@ -1,7 +1,9 @@
 #ifndef GODOTSTEAM_REGISTER_TYPES_H
 #define GODOTSTEAM_REGISTER_TYPES_H
 
-void register_godotsteam_types();
-void unregister_godotsteam_types();
+#include "modules/register_module_types.h"
+
+void initialize_godotsteam_module(ModuleInitializationLevel p_level);
+void uninitialize_godotsteam_module(ModuleInitializationLevel p_level);
 
 #endif // GODOTSTEAM_REGISTER_TYPES_H

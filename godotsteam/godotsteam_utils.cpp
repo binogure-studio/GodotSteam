@@ -19,22 +19,18 @@ void GodotSteamUtils::reset_singleton() {
   GodotSteamUtils::singleton = NULL;
 }
 
-CSteamID GodotSteamUtils::createSteamID(uint32 steamID, uint64_t accountType) {
-  CSteamID cSteamID;
-  if (accountType < 0 || accountType >= k_EAccountTypeMax) {
-    accountType = 1;
-  }
-
-  cSteamID.Set(steamID, EUniverse(k_EUniversePublic),
-               EAccountType(accountType));
-
-  return cSteamID;
-}
-
 String GodotSteamUtils::getIPCountry() { return SteamUtils()->GetIPCountry(); }
 
 bool GodotSteamUtils::isOverlayEnabled() {
   return SteamUtils()->IsOverlayEnabled();
+}
+
+bool GodotSteamUtils::isRunningOnSteamDeck() {
+  return SteamUtils()->IsSteamRunningOnSteamDeck();
+}
+
+bool GodotSteamUtils::showFloatingGamepadTextInput(uint64_t keyboardMode, uint64_t inputPositionX, uint64_t inputPositionY, uint64_t inputWidth, uint64_t inputHeight) {
+  return SteamUtils()->ShowFloatingGamepadTextInput((EFloatingGamepadTextInputMode)keyboardMode, inputPositionX, inputPositionY, inputWidth, inputHeight);
 }
 
 void GodotSteamUtils::setOverlayNotificationPosition(uint64_t pos) {
@@ -101,6 +97,7 @@ void GodotSteamUtils::_bind_methods() {
   ClassDB::bind_method("getIPCountry", &GodotSteamUtils::getIPCountry);
   ClassDB::bind_method("isOverlayEnabled",
                             &GodotSteamUtils::isOverlayEnabled);
+  ClassDB::bind_method("isRunningOnSteamDeck", &GodotSteamUtils::isRunningOnSteamDeck);
   ClassDB::bind_method("getSteamUILanguage",
                             &GodotSteamUtils::getSteamUILanguage);
   ClassDB::bind_method("getAppID", &GodotSteamUtils::getAppID);

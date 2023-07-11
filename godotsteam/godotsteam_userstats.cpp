@@ -93,8 +93,7 @@ void GodotSteamUserstats::findLeaderboard(const String &name) {
 
   SteamAPICall_t apiCall =
       SteamUserStats()->FindLeaderboard(name.utf8().get_data());
-  callResultFindLeaderboard.Set(apiCall, this,
-                                &GodotSteamUserstats::OnFindLeaderboard);
+  callResultFindLeaderboard.Set(apiCall, this, &GodotSteamUserstats::OnFindLeaderboard);
 }
 
 void GodotSteamUserstats::OnFindLeaderboard(
