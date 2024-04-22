@@ -3,14 +3,13 @@
 GodotSteamMatchmaking *GodotSteamMatchmaking::singleton = NULL;
 
 GodotSteamMatchmaking::GodotSteamMatchmaking():
+  callbackLobbyGameCreated(this, &GodotSteamMatchmaking::_lobby_game_created),
+  callbackLobbyKicked(this, &GodotSteamMatchmaking::_lobby_kicked),
+  callbackLobbyDataUpdated(this, &GodotSteamMatchmaking::_lobby_data_updated),
   callbackLobbyInvite(this, &GodotSteamMatchmaking::_lobby_invite),
   callbackJoinRequested(this, &GodotSteamMatchmaking::_join_requested),
   callbackMessageReceived(this, &GodotSteamMatchmaking::_message_received),
-  callbackLobbyChatUpdate(this, &GodotSteamMatchmaking::_lobby_chat_update),
-  callbackLobbyGameCreated(this, &GodotSteamMatchmaking::_lobby_game_created),
-  callbackLobbyKicked(this, &GodotSteamMatchmaking::_lobby_kicked),
-  callbackLobbyDataUpdated(this, &GodotSteamMatchmaking::_lobby_data_updated)
-
+  callbackLobbyChatUpdate(this, &GodotSteamMatchmaking::_lobby_chat_update)
 {
   singleton = this;
 }

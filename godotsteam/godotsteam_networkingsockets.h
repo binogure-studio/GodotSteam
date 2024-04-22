@@ -57,11 +57,13 @@ public:
 
   void clearAllIdentities();
 
+  uint64_t initAuthentication();
+  uint64_t getAuthenticationStatus();
   uint32_t createListenSocketP2P(uint64_t numberOfSockets, Array optionsArray);
   bool closeListenSocket(uint32_t socketToClose);
   uint32_t connectP2P(uint64_t remoteSteamId, uint64_t numberOfSockets, Array optionsArray);
   uint32_t acceptConnection(uint64_t handleConnection);
-  bool closeConnection(uint64_t handleConnection, uint32_t reason, const String &debugData, bool enableLinger);
+  bool closeConnection(uint64_t handleConnection, uint32_t reason, const String &debugData = "", bool enableLinger = true);
 
   Dictionary sendMessageToConnection(uint32 handleConnection, const PackedByteArray data, int flags);
   uint64_t sendMessages(int messages, const PackedByteArray data, uint32 handleConnection, int flags);
@@ -76,23 +78,25 @@ public:
 
   Dictionary getConnectionInfo(uint32 handleConnection);
   Dictionary getDetailedConnectionStatus(uint32 connection);
+  Dictionary getConnectionRealTimeStatus(uint32 connection);
   uint64_t getConnectionUserData(uint32 peer);
   void setConnectionName(uint32 peer, const String& name);
   String getConnectionName(uint32 peer);
   Dictionary getListenSocketAddress(uint32 socket);
   String getIdentity();
 
+  SteamNetworkingIdentity getOrCreateNetworkingIdentity(uint64_t steamId);
 protected:
   static void _bind_methods();
   static GodotSteamNetworkingSockets *singleton;
 
   SteamNetworkingConfigValue_t* convertOptionsArray(Array options);
 private:
-  SteamNetworkingIdentity getOrCreateNetworkingIdentity(uint64_t steamId);
 
   std::map<uint64_t, SteamNetworkingIdentity> networkingIdentities;
 
   STEAM_CALLBACK(GodotSteamNetworkingSockets, _connection_status_changed, SteamNetConnectionStatusChangedCallback_t, callbackRelayConnectionStatusChanged);
+  STEAM_CALLBACK(GodotSteamNetworkingSockets, _authentication_status_changed, SteamNetAuthenticationStatus_t , callbackAuthenticationStatusChanged);
 
   GDCLASS(GodotSteamNetworkingSockets, Object);
 };

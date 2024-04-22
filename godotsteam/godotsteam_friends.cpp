@@ -4,7 +4,8 @@ GodotSteamFriends *GodotSteamFriends::singleton = NULL;
 
 GodotSteamFriends::GodotSteamFriends():
   callbackAvatarLoaded(this, &GodotSteamFriends::_avatar_loaded),
-  callbackGameLobbyJoinRequested(this, &GodotSteamFriends::_game_lobby_join_requested)
+  callbackGameLobbyJoinRequested(this, &GodotSteamFriends::_game_lobby_join_requested),
+  callbackPersonaStateChanged(this, &GodotSteamFriends::_persona_state_changed)
 {
     singleton = this;
 }
@@ -40,18 +41,16 @@ String GodotSteamFriends::getPersonaName() {
 }
 
 String GodotSteamFriends::getFriendPersonaName(uint64_t steamID) {
-  String personaName = "";
+  STEAM_FAIL_COND_V(!isSteamFriendsReady(), "");
 
-  if (isSteamFriendsReady() && steamID > 0) {
-    CSteamID friendID = (uint64)steamID;
-    bool isDataLoading = SteamFriends()->RequestUserInformation(friendID, true);
+  CSteamID friendID = (uint64)steamID;
 
-    if (!isDataLoading) {
-      personaName = SteamFriends()->GetFriendPersonaName(friendID);
-    }
+  if (SteamFriends()->RequestUserInformation(friendID, true)) {
+    return "";
   }
 
-  return personaName;
+
+  return SteamFriends()->GetFriendPersonaName(friendID);
 }
 
 void GodotSteamFriends::setGameInfo(const String &s_key,
@@ -88,33 +87,32 @@ void GodotSteamFriends::setPlayedWith(uint64_t steamID) {
 }
 
 Array GodotSteamFriends::getRecentPlayers() {
-  STEAM_FAIL_COND_V(!isSteamFriendsReady(), Array());
+  Array result;
+  STEAM_FAIL_COND_V(!isSteamFriendsReady(), result);
 
-  uint64_t rCount = SteamFriends()->GetCoplayFriendCount();
-  Array recents;
+  uint64_t count = SteamFriends()->GetCoplayFriendCount();
 
-  for (uint64_t index = 0; index < rCount; index++) {
+  for (uint64_t index = 0; index < count; index++) {
     CSteamID rPlayerID = SteamFriends()->GetCoplayFriend(index);
 
-    if (SteamFriends()->GetFriendCoplayGame(rPlayerID) ==
-        SteamUtils()->GetAppID()) {
-      Dictionary rPlayer;
+    if (SteamFriends()->GetFriendCoplayGame(rPlayerID) == SteamUtils()->GetAppID()) {
+      Dictionary player_data;
       String rName = SteamFriends()->GetFriendPersonaName(rPlayerID);
       uint64_t rStatus = SteamFriends()->GetFriendPersonaState(rPlayerID);
 
-      rPlayer["id"] = rPlayerID.GetAccountID();
-      rPlayer["name"] = rName;
-      rPlayer["status"] = rStatus;
+      player_data["id"] = rPlayerID.GetAccountID();
+      player_data["name"] = rName;
+      player_data["status"] = rStatus;
 
-      recents.append(rPlayer);
+      result.append(player_data);
     }
   }
 
-  return recents;
+  return result;
 }
 
-void GodotSteamFriends::getFriendAvatar(uint64_t size, uint64_t steam_id) {
-  STEAM_FAIL_COND(size < AVATAR_SMALL || size > AVATAR_LARGE || !isSteamFriendsReady());
+int GodotSteamFriends::getFriendAvatar(uint64_t size, uint64_t steam_id) {
+  STEAM_FAIL_COND_V(size < AVATAR_SMALL || size > AVATAR_LARGE || !isSteamFriendsReady(), NO_AVATAR);
 
   CSteamID avatar_id = (steam_id == 0) ? SteamUser()->GetSteamID() : (uint64)steam_id;
   uint64_t iHandle = 0;
@@ -125,36 +123,38 @@ void GodotSteamFriends::getFriendAvatar(uint64_t size, uint64_t steam_id) {
       size = 32;
       break;
 
+    case AVATAR_LARGE:
+      iHandle = SteamFriends()->GetLargeFriendAvatar(avatar_id);
+      size = 128;
+      break;
+
     case AVATAR_MEDIUM:
+    default:
       iHandle = SteamFriends()->GetMediumFriendAvatar(avatar_id);
       size = 64;
       break;
-
-    case AVATAR_LARGE:
-      iHandle = SteamFriends()->GetLargeFriendAvatar(avatar_id);
-      size = 184;
-      break;
-
-    default:
-      return;
   }
 
-  if (iHandle <= 0) {
-    return;
+  if (iHandle > 0) {
+    // Has already loaded, simulate callback
+    AvatarImageLoaded_t *avatarData = new AvatarImageLoaded_t;
+    avatarData->m_steamID = avatar_id;
+    avatarData->m_iImage = iHandle;
+    avatarData->m_iWide = size;
+    avatarData->m_iTall = size;
+
+    _avatar_loaded(avatarData);
+
+    delete avatarData;
   }
 
-  // Has already loaded, simulate callback
-  AvatarImageLoaded_t *avatarData = new AvatarImageLoaded_t;
-  avatarData->m_steamID = avatar_id;
-  avatarData->m_iImage = iHandle;
-  avatarData->m_iWide = size;
-  avatarData->m_iTall = size;
+  return (iHandle == 0) ? NO_AVATAR : LOADING_AVATAR;
+}
 
-  _avatar_loaded(avatarData);
+void GodotSteamFriends::_persona_state_changed(PersonaStateChange_t *callData) {
+  CSteamID steamID = callData->m_ulSteamID;
 
-  delete avatarData;
-
-  return;
+  emit_signal("persona_state_changed", (uint64_t)steamID.ConvertToUint64(), (uint64_t)callData->m_nChangeFlags);
 }
 
 void GodotSteamFriends::_game_lobby_join_requested(GameLobbyJoinRequested_t *callData) {
@@ -308,7 +308,28 @@ void GodotSteamFriends::_bind_methods() {
     PropertyInfo(Variant::INT, "lobby")
   ));
 
+  ADD_SIGNAL(MethodInfo("persona_state_changed",
+    PropertyInfo(Variant::INT, "steamID"),
+    PropertyInfo(Variant::INT, "flag")
+  ));
+
   BIND_CONSTANT(AVATAR_SMALL);
   BIND_CONSTANT(AVATAR_MEDIUM);
   BIND_CONSTANT(AVATAR_LARGE);
+
+  BIND_CONSTANT(PERSONA_CHANGE_NAME);
+  BIND_CONSTANT(PERSONA_CHANGE_STATUS);
+  BIND_CONSTANT(PERSONA_CHANGE_COME_ONLINE);
+  BIND_CONSTANT(PERSONA_CHANGE_GONE_OFFLINE);
+  BIND_CONSTANT(PERSONA_CHANGE_GAME_PLAYED);
+  BIND_CONSTANT(PERSONA_CHANGE_GAME_SERVER);
+  BIND_CONSTANT(PERSONA_CHANGE_AVATAR);
+  BIND_CONSTANT(PERSONA_CHANGE_JOINED_SOURCE);
+  BIND_CONSTANT(PERSONA_CHANGE_LEFT_SOURCE);
+  BIND_CONSTANT(PERSONA_CHANGE_RELATIONSHIP_CHANGED);
+  BIND_CONSTANT(PERSONA_CHANGE_NAME_FIRST_SET);
+  BIND_CONSTANT(PERSONA_CHANGE_BROADCAST);
+  BIND_CONSTANT(PERSONA_CHANGE_NICKNAME);
+  BIND_CONSTANT(PERSONA_CHANGE_STEAM_LEVEL);
+  BIND_CONSTANT(PERSONA_CHANGE_RICH_PRESENCE);
 }

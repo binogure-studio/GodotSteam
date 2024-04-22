@@ -18,8 +18,27 @@ public:
   enum
   {
     AVATAR_SMALL = 0,
-    AVATAR_MEDIUM,
-    AVATAR_LARGE
+    AVATAR_MEDIUM = 1,
+    AVATAR_LARGE = 2,
+
+    NO_AVATAR = 0,
+    LOADING_AVATAR = 1,
+
+    PERSONA_CHANGE_NAME = (uint64_t) k_EPersonaChangeName,
+    PERSONA_CHANGE_STATUS = (uint64_t) k_EPersonaChangeStatus,
+    PERSONA_CHANGE_COME_ONLINE = (uint64_t) k_EPersonaChangeComeOnline,
+    PERSONA_CHANGE_GONE_OFFLINE = (uint64_t) k_EPersonaChangeGoneOffline,
+    PERSONA_CHANGE_GAME_PLAYED = (uint64_t) k_EPersonaChangeGamePlayed,
+    PERSONA_CHANGE_GAME_SERVER = (uint64_t) k_EPersonaChangeGameServer,
+    PERSONA_CHANGE_AVATAR = (uint64_t) k_EPersonaChangeAvatar,
+    PERSONA_CHANGE_JOINED_SOURCE = (uint64_t) k_EPersonaChangeJoinedSource,
+    PERSONA_CHANGE_LEFT_SOURCE = (uint64_t) k_EPersonaChangeLeftSource,
+    PERSONA_CHANGE_RELATIONSHIP_CHANGED = (uint64_t) k_EPersonaChangeRelationshipChanged,
+    PERSONA_CHANGE_NAME_FIRST_SET = (uint64_t) k_EPersonaChangeNameFirstSet,
+    PERSONA_CHANGE_BROADCAST = (uint64_t) k_EPersonaChangeBroadcast,
+    PERSONA_CHANGE_NICKNAME = (uint64_t) k_EPersonaChangeNickname,
+    PERSONA_CHANGE_STEAM_LEVEL = (uint64_t) k_EPersonaChangeSteamLevel,
+    PERSONA_CHANGE_RICH_PRESENCE = (uint64_t) k_EPersonaChangeRichPresence
   };
 
   static GodotSteamFriends *get_singleton();
@@ -38,7 +57,7 @@ public:
   void inviteFriend(uint64_t id, const String &conString);
   void setPlayedWith(uint64_t steam_id);
   Array getRecentPlayers();
-  void getFriendAvatar(uint64_t size = AVATAR_MEDIUM, uint64_t steam_id = 0);
+  int getFriendAvatar(uint64_t size = AVATAR_MEDIUM, uint64_t steam_id = 0);
   Array getUserSteamGroups();
   Array getUserSteamFriends();
   void activateGameOverlay(const String &type);
@@ -54,6 +73,7 @@ protected:
 private:
   STEAM_CALLBACK(GodotSteamFriends, _avatar_loaded, AvatarImageLoaded_t, callbackAvatarLoaded);
   STEAM_CALLBACK(GodotSteamFriends, _game_lobby_join_requested, GameLobbyJoinRequested_t, callbackGameLobbyJoinRequested);
+  STEAM_CALLBACK(GodotSteamFriends, _persona_state_changed, PersonaStateChange_t, callbackPersonaStateChanged);
 
   GDCLASS(GodotSteamFriends, Object);
 };

@@ -3,7 +3,8 @@
 GodotSteamNetworkingSockets *GodotSteamNetworkingSockets::singleton = NULL;
 
 GodotSteamNetworkingSockets::GodotSteamNetworkingSockets():
-  callbackRelayConnectionStatusChanged(this, &GodotSteamNetworkingSockets::_connection_status_changed)
+  callbackRelayConnectionStatusChanged(this, &GodotSteamNetworkingSockets::_connection_status_changed),
+  callbackAuthenticationStatusChanged(this, &GodotSteamNetworkingSockets::_authentication_status_changed)
 {
     singleton = this;
 }
@@ -71,6 +72,18 @@ SteamNetworkingIdentity GodotSteamNetworkingSockets::getOrCreateNetworkingIdenti
   }
 
   return networkingIdentities[steamId];
+}
+
+uint64_t GodotSteamNetworkingSockets::initAuthentication() {
+  STEAM_FAIL_COND_V(!isSteamNetworkingSocketsReady(), (uint64_t)k_ESteamNetworkingAvailability_CannotTry);
+
+  return (uint64_t)SteamNetworkingSockets()->InitAuthentication();
+}
+
+uint64_t GodotSteamNetworkingSockets::getAuthenticationStatus() {
+  STEAM_FAIL_COND_V(!isSteamNetworkingSocketsReady(), (uint64_t)k_ESteamNetworkingAvailability_CannotTry);
+
+  return (uint64_t)SteamNetworkingSockets()->GetAuthenticationStatus(NULL);
 }
 
 void GodotSteamNetworkingSockets::clearAllIdentities() {
@@ -299,6 +312,44 @@ Dictionary GodotSteamNetworkingSockets::getDetailedConnectionStatus(uint32 conne
   return result;
 }
 
+Dictionary GodotSteamNetworkingSockets::getConnectionRealTimeStatus(uint32 connection) {
+  Dictionary result;
+  STEAM_FAIL_COND_V(!isSteamNetworkingSocketsReady(), result);
+  SteamNetConnectionRealTimeStatus_t connection_real_time_state;
+  EResult e_result = SteamNetworkingSockets()->GetConnectionRealTimeStatus((HSteamNetConnection)connection, &connection_real_time_state, 0, NULL);
+
+  result["result"] = e_result;
+  
+  if (k_EResultOK == e_result) {
+    // High level state of the connection
+    result["eState"] = (int)connection_real_time_state.m_eState;
+
+    // Current ping (ms)
+    result["nPing"] = connection_real_time_state.m_nPing;
+
+    // Connection quality measured locally, 0...1.  (Percentage of packets delivered
+    // end-to-end in order).
+    result["flConnectionQualityLocal"] = connection_real_time_state.m_flConnectionQualityLocal;
+    result["flConnectionQualityRemote"] = connection_real_time_state.m_flConnectionQualityRemote;
+
+    // Current data rates from recent history.
+    result["flOutPacketsPerSec"] = connection_real_time_state.m_flOutPacketsPerSec;
+    result["flOutBytesPerSec"] = connection_real_time_state.m_flOutBytesPerSec;
+    result["flInPacketsPerSec"] = connection_real_time_state.m_flInPacketsPerSec;
+    result["flInBytesPerSec"] = connection_real_time_state.m_flInBytesPerSec;
+
+    result["nSendRateBytesPerSecond"] = connection_real_time_state.m_nSendRateBytesPerSecond;
+
+    result["cbPendingUnreliable"] = connection_real_time_state.m_cbPendingUnreliable;
+    result["cbPendingReliable"] = connection_real_time_state.m_cbPendingReliable;
+    result["cbSentUnackedReliable"] = connection_real_time_state.m_cbSentUnackedReliable;
+
+    result["usecQueueTime"] = (uint64_t) connection_real_time_state.m_usecQueueTime;
+  }
+
+  return result;
+}
+
 uint64_t GodotSteamNetworkingSockets::getConnectionUserData(uint32 peer) {
 
   STEAM_FAIL_COND_V(!isSteamNetworkingSocketsReady(), -1);
@@ -359,6 +410,29 @@ String GodotSteamNetworkingSockets::getIdentity() {
   return result;
 }
 
+void GodotSteamNetworkingSockets::_authentication_status_changed(SteamNetAuthenticationStatus_t *pAuthenticationStatus) {
+  
+  switch (pAuthenticationStatus->m_eAvail) {
+    case k_ESteamNetworkingAvailability_Attempting:
+    case k_ESteamNetworkingAvailability_Retrying:
+    case k_ESteamNetworkingAvailability_Waiting:
+      emit_signal("authentication_ongoing", pAuthenticationStatus->m_eAvail);
+      break;
+
+    case k_ESteamNetworkingAvailability_Current:
+      emit_signal("authentication_succeeded", pAuthenticationStatus->m_eAvail);
+      break;
+
+    case k_ESteamNetworkingAvailability_CannotTry:
+    case k_ESteamNetworkingAvailability_Failed:
+    case k_ESteamNetworkingAvailability_Previously:
+    case k_ESteamNetworkingAvailability_NeverTried:
+    case k_ESteamNetworkingAvailability_Unknown:
+    case k_ESteamNetworkingAvailability__Force32bit:
+      emit_signal("authentication_failed", pAuthenticationStatus->m_eAvail);
+      break;
+  }
+}
 
 void GodotSteamNetworkingSockets::_connection_status_changed(SteamNetConnectionStatusChangedCallback_t *pConnectionStatus) {
 
@@ -408,11 +482,17 @@ void GodotSteamNetworkingSockets::_connection_status_changed(SteamNetConnectionS
 
 void GodotSteamNetworkingSockets::_bind_methods() {
 
+  ClassDB::bind_method("initAuthentication", &GodotSteamNetworkingSockets::initAuthentication);
   ClassDB::bind_method(D_METHOD("createListenSocketP2P", "numberOfSockets"), &GodotSteamNetworkingSockets::createListenSocketP2P, DEFVAL(0));
   ClassDB::bind_method("connectP2P", &GodotSteamNetworkingSockets::connectP2P);
   ClassDB::bind_method("acceptConnection", &GodotSteamNetworkingSockets::acceptConnection);
   ClassDB::bind_method("closeListenSocket", &GodotSteamNetworkingSockets::closeListenSocket);
-  ClassDB::bind_method("closeConnection", &GodotSteamNetworkingSockets::closeConnection);
+
+  ClassDB::bind_method(
+    D_METHOD("closeConnection", "handleConnection", "reason", "debugData", "enableLinger"),
+    &GodotSteamNetworkingSockets::closeConnection, DEFVAL(""), DEFVAL(false)
+  );
+
   ClassDB::bind_method("clearAllIdentities", &GodotSteamNetworkingSockets::clearAllIdentities);
 
   ClassDB::bind_method("sendMessageToConnection", &GodotSteamNetworkingSockets::sendMessageToConnection);
@@ -428,11 +508,24 @@ void GodotSteamNetworkingSockets::_bind_methods() {
 
   ClassDB::bind_method("getConnectionInfo", &GodotSteamNetworkingSockets::getConnectionInfo);
   ClassDB::bind_method("getDetailedConnectionStatus", &GodotSteamNetworkingSockets::getDetailedConnectionStatus);
+  ClassDB::bind_method("getConnectionRealTimeStatus", &GodotSteamNetworkingSockets::getConnectionRealTimeStatus);
   ClassDB::bind_method("getConnectionUserData", &GodotSteamNetworkingSockets::getConnectionUserData);
   ClassDB::bind_method("setConnectionName", &GodotSteamNetworkingSockets::setConnectionName);
   ClassDB::bind_method("getConnectionName", &GodotSteamNetworkingSockets::getConnectionName);
   ClassDB::bind_method("getListenSocketAddress", &GodotSteamNetworkingSockets::getListenSocketAddress);
   ClassDB::bind_method("getIdentity", &GodotSteamNetworkingSockets::getIdentity);
+
+  ADD_SIGNAL(MethodInfo("authentication_ongoing", 
+    PropertyInfo(Variant::INT, "authentication_status")
+  ));
+
+  ADD_SIGNAL(MethodInfo("authentication_succeeded", 
+    PropertyInfo(Variant::INT, "authentication_status")
+  ));
+
+  ADD_SIGNAL(MethodInfo("authentication_failed", 
+    PropertyInfo(Variant::INT, "authentication_status")
+  ));
 
   ADD_SIGNAL(MethodInfo("connection_arrived",
     PropertyInfo(Variant::INT, "connection_handle"),
