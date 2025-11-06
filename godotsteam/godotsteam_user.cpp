@@ -4,7 +4,10 @@ GodotSteamUser *GodotSteamUser::singleton = NULL;
 
 GodotSteamUser::GodotSteamUser():
   callbackGetAuthSessionTicketResponse(this, &GodotSteamUser::_get_auth_session_ticket_response),
-  callbackValidateAuthTicketResponse(this, &GodotSteamUser::_validate_auth_ticket_response)
+  callbackValidateAuthTicketResponse(this, &GodotSteamUser::_validate_auth_ticket_response),
+  callbackSteamServerConnectFailure(this, &GodotSteamUser::_steam_server_connect_failure),
+  callbackSteamServersConnected(this, &GodotSteamUser::_steam_servers_connected),
+  callbackSteamServersDisconnected(this, &GodotSteamUser::_steam_servers_disconnected)
 {
   singleton = this;
 }
@@ -123,6 +126,7 @@ Dictionary GodotSteamUser::getAuthSessionTicket() {
 
   uint32_t ticketSize = AUTH_TICKET_SIZE;
   uint64_t steamId = SteamUser()->GetSteamID().ConvertToUint64();
+  unsigned char md5_hash[16];
 
   PackedByteArray buffer;
   buffer.resize(ticketSize);
@@ -133,8 +137,13 @@ Dictionary GodotSteamUser::getAuthSessionTicket() {
 
   // Add this data to the dictionary
   authTicket["id"] = SteamUser()->GetAuthSessionTicket(buffer.ptrw(), ticketSize, &ticketSize, &identity);
+
+  // Generate md5
+  CryptoCore::md5(buffer.ptr(), buffer.size(), md5_hash);
+
   authTicket["buffer"] = buffer;
   authTicket["size"] = ticketSize;
+  authTicket["md5"] = String::hex_encode_buffer(md5_hash, 16);
 
   return authTicket;
 }
@@ -153,6 +162,22 @@ void GodotSteamUser::_validate_auth_ticket_response(ValidateAuthTicketResponse_t
 
   emit_signal("validate_auth_ticket_response", authId, response, ownerId);
 }
+
+void GodotSteamUser::_steam_server_connect_failure(SteamServerConnectFailure_t *callData) {
+
+  emit_signal("steam_server_connection_failed", (int)callData->m_eResult, callData->m_bStillRetrying);
+}
+
+void GodotSteamUser::_steam_servers_connected(SteamServersConnected_t *callData) {
+
+  emit_signal("steam_server_connected");
+}
+
+void GodotSteamUser::_steam_servers_disconnected(SteamServersDisconnected_t *callData) {
+
+  emit_signal("steam_server_disconnected", (int)callData->m_eResult);
+}
+
 
 void GodotSteamUser::_bind_methods() {
   ClassDB::bind_method("getSteamID", &GodotSteamUser::getSteamID);
@@ -187,6 +212,16 @@ void GodotSteamUser::_bind_methods() {
     PropertyInfo(Variant::INT, "auth_id"),
     PropertyInfo(Variant::INT, "response"),
     PropertyInfo(Variant::INT, "owner_id")
+  ));
+
+  ADD_SIGNAL(MethodInfo("steam_server_connection_failed",
+    PropertyInfo(Variant::INT, "reason"),
+    PropertyInfo(Variant::BOOL, "still_retrying")
+  ));
+
+  ADD_SIGNAL(MethodInfo("steam_server_connected"));
+  ADD_SIGNAL(MethodInfo("steam_server_disconnected",
+    PropertyInfo(Variant::INT, "reason")
   ));
 
   BIND_CONSTANT(BEGIN_AUTH_SESSION_RESULT_OK);

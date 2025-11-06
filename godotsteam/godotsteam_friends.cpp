@@ -37,7 +37,7 @@ uint64_t GodotSteamFriends::getFriendCount() {
 String GodotSteamFriends::getPersonaName() {
   STEAM_FAIL_COND_V(!isSteamFriendsReady(), "");
 
-  return SteamFriends()->GetPersonaName();
+  return String::utf8(SteamFriends()->GetPersonaName());
 }
 
 String GodotSteamFriends::getFriendPersonaName(uint64_t steamID) {
@@ -50,7 +50,7 @@ String GodotSteamFriends::getFriendPersonaName(uint64_t steamID) {
   }
 
 
-  return SteamFriends()->GetFriendPersonaName(friendID);
+  return String::utf8(SteamFriends()->GetFriendPersonaName(friendID));
 }
 
 void GodotSteamFriends::setGameInfo(const String &s_key,
@@ -97,7 +97,7 @@ Array GodotSteamFriends::getRecentPlayers() {
 
     if (SteamFriends()->GetFriendCoplayGame(rPlayerID) == SteamUtils()->GetAppID()) {
       Dictionary player_data;
-      String rName = SteamFriends()->GetFriendPersonaName(rPlayerID);
+      String rName = String::utf8(SteamFriends()->GetFriendPersonaName(rPlayerID));
       uint64_t rStatus = SteamFriends()->GetFriendPersonaState(rPlayerID);
 
       player_data["id"] = rPlayerID.GetAccountID();
@@ -203,11 +203,10 @@ void GodotSteamFriends::activateGameOverlayToWebPage(const String &url) {
   SteamFriends()->ActivateGameOverlayToWebPage(url.utf8().get_data());
 }
 
-void GodotSteamFriends::activateGameOverlayToStore(AppId_t app_id) {
+void GodotSteamFriends::activateGameOverlayToStore(uint64_t app_id, uint64_t overlayStoreFlag) {
   STEAM_FAIL_COND(!isSteamFriendsReady());
 
-  SteamFriends()->ActivateGameOverlayToStore(AppId_t(app_id),
-                                             EOverlayToStoreFlag(0));
+  SteamFriends()->ActivateGameOverlayToStore(AppId_t(app_id), EOverlayToStoreFlag(overlayStoreFlag));
 }
 
 Array GodotSteamFriends::getUserSteamGroups() {
@@ -220,7 +219,7 @@ Array GodotSteamFriends::getUserSteamGroups() {
 
     Dictionary groups;
     CSteamID groupID = SteamFriends()->GetClanByIndex(index);
-    String gName = SteamFriends()->GetClanName(groupID);
+    String gName = String::utf8(SteamFriends()->GetClanName(groupID));
     String gTag = SteamFriends()->GetClanTag(groupID);
     groups["id"] = groupID.GetAccountID();
     groups["name"] = gName;
@@ -240,7 +239,7 @@ Array GodotSteamFriends::getUserSteamFriends() {
   for (uint64_t index = 0; index < fCount; index++) {
     Dictionary friends;
     CSteamID friendID = SteamFriends()->GetFriendByIndex(index, 0x04);
-    String fName = SteamFriends()->GetFriendPersonaName(friendID);
+    String fName = String::utf8(SteamFriends()->GetFriendPersonaName(friendID));
     uint64_t fStatus = SteamFriends()->GetFriendPersonaState(friendID);
     friends["id"] = friendID.GetAccountID();
     friends["name"] = fName;
@@ -291,8 +290,9 @@ void GodotSteamFriends::_bind_methods() {
       &GodotSteamFriends::activateGameOverlayToUser, DEFVAL(""));
   ClassDB::bind_method(D_METHOD("activateGameOverlayToWebPage", "url"),
                             &GodotSteamFriends::activateGameOverlayToWebPage);
-  ClassDB::bind_method(D_METHOD("activateGameOverlayToStore", "appID"),
+  ClassDB::bind_method(D_METHOD("activateGameOverlayToStore", "appID", "overlayStoreFlag"),
                             &GodotSteamFriends::activateGameOverlayToStore,
+                            DEFVAL(0),
                             DEFVAL(0));
   ClassDB::bind_method(
       D_METHOD("activateGameOverlayInviteDialog", "steam_id"),
@@ -332,4 +332,7 @@ void GodotSteamFriends::_bind_methods() {
   BIND_CONSTANT(PERSONA_CHANGE_NICKNAME);
   BIND_CONSTANT(PERSONA_CHANGE_STEAM_LEVEL);
   BIND_CONSTANT(PERSONA_CHANGE_RICH_PRESENCE);
+
+  BIND_CONSTANT(NO_AVATAR);
+  BIND_CONSTANT(LOADING_AVATAR);
 }

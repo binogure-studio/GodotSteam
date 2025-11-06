@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <steam/steam_api.h>
 
+#include "core/crypto/crypto_core.h"
 #include "core/io/ip.h"
 #include "core/io/ip_address.h"
 #include "core/object/object.h"
@@ -68,6 +69,10 @@ protected:
 private:
   STEAM_CALLBACK(GodotSteamUser, _get_auth_session_ticket_response, GetAuthSessionTicketResponse_t, callbackGetAuthSessionTicketResponse);
   STEAM_CALLBACK(GodotSteamUser, _validate_auth_ticket_response, ValidateAuthTicketResponse_t, callbackValidateAuthTicketResponse);
+
+  STEAM_CALLBACK(GodotSteamUser, _steam_server_connect_failure, SteamServerConnectFailure_t, callbackSteamServerConnectFailure);
+  STEAM_CALLBACK(GodotSteamUser, _steam_servers_connected, SteamServersConnected_t, callbackSteamServersConnected);
+  STEAM_CALLBACK(GodotSteamUser, _steam_servers_disconnected, SteamServersDisconnected_t, callbackSteamServersDisconnected);
 
   GDCLASS(GodotSteamUser, Object);
 };

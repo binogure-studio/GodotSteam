@@ -83,7 +83,9 @@ bool GodotSteamMatchmaking::kickUserFromLobby(uint64_t steamIDLobby, uint64_t st
   chatMessage.type = MESSAGE_KICK;
   chatMessage.userID = steamIDUser;
   chatMessage.textLength = 0;
-  chatMessage.text = NULL;
+
+  // Initialize the chat message with null value
+  memset(&chatMessage.text, '\0', sizeof(chatMessage.text));
 
   return SteamMatchmaking()->SendLobbyChatMsg(lobbyID, &chatMessage, sizeof(chatMessage));
 }
@@ -137,6 +139,20 @@ void GodotSteamMatchmaking::requestLobbyList() {
   callResultFindLobby.Set(apiCall, this, &GodotSteamMatchmaking::_lobbies_found);
 }
 
+uint64_t GodotSteamMatchmaking::getLobbyMemberLimit(uint64_t steamIDLobby) {
+  STEAM_FAIL_COND_V(!isSteamMatchmakingReady(), false);
+
+  CSteamID lobbyID = (uint64)steamIDLobby;
+  return SteamMatchmaking()->GetLobbyMemberLimit(lobbyID);
+}
+
+bool GodotSteamMatchmaking::setLobbyMemberLimit(uint64_t steamIDLobby, uint64_t maxMembers) {
+  STEAM_FAIL_COND_V(!isSteamMatchmakingReady(), false);
+
+  CSteamID lobbyID = (uint64)steamIDLobby;
+  return SteamMatchmaking()->SetLobbyMemberLimit(lobbyID, maxMembers);
+}
+
 bool GodotSteamMatchmaking::deleteLobbyData(uint64_t steamIDLobby, const String &key) {
 
   STEAM_FAIL_COND_V(!isSteamMatchmakingReady(), false);
@@ -164,7 +180,7 @@ Dictionary GodotSteamMatchmaking::getLobbyData(uint64_t steamIDLobby) {
     char value[k_cubChatMetadataMax];
 
     if (SteamMatchmaking()->GetLobbyDataByIndex(lobbyID, index, key, k_nMaxLobbyKeyLength, value, k_cubChatMetadataMax)) {
-      result[key] = value;
+      result[key] = String::utf8(value);
     }
   }
 
@@ -213,11 +229,16 @@ bool GodotSteamMatchmaking::sendLobbyChatMessage(uint64_t steamIDLobby, const St
 
   chatMessage.type = MESSAGE_TEXT;
   chatMessage.userID = (uint64)GodotSteamUser::get_singleton()->getSteamID();
-  chatMessage.text = message.utf8().get_data();
-  chatMessage.textLength = strlen(chatMessage.text) + 1;
+
+  uint32_t messageLength = MIN(strlen(message.utf8().get_data()), sizeof(chatMessage.text) - 1);
+
+  memset(&chatMessage.text, '\0', sizeof(chatMessage.text));
+  memcpy(&chatMessage.text, message.utf8().get_data(), messageLength);
+
+  chatMessage.textLength = messageLength + 1;
 
   // if steamIDLobby is text, size should be strlen( text ) + 1, to include the null terminator
-  return SteamMatchmaking()->SendLobbyChatMsg(lobbyID, &chatMessage, sizeof(chatMessage) + chatMessage.textLength);
+  return SteamMatchmaking()->SendLobbyChatMsg(lobbyID, &chatMessage, sizeof(ChatMessage));
 }
 
 bool GodotSteamMatchmaking::setLobbyType(uint64_t steamIDLobby, uint64_t lobby_type) {
@@ -269,12 +290,12 @@ void GodotSteamMatchmaking::_join_requested(GameRichPresenceJoinRequested_t *cal
 }
 
 void GodotSteamMatchmaking::_message_received(LobbyChatMsg_t* callData) {
-  char buffer[4096];
+  char buffer[STEAM_MAX_BUFFER_SIZE];
   CSteamID lobbyID = callData->m_ulSteamIDLobby;
   CSteamID userID = callData->m_ulSteamIDUser;
   uint8 chatType = callData->m_eChatEntryType;
 
-  int messageSize = SteamMatchmaking()->GetLobbyChatEntry(lobbyID, callData->m_iChatID, &userID, &buffer, 4096, NULL);
+  int messageSize = SteamMatchmaking()->GetLobbyChatEntry(lobbyID, callData->m_iChatID, &userID, &buffer, STEAM_MAX_BUFFER_SIZE, NULL);
 
   if (messageSize > 0) {
     ChatMessage *message = (ChatMessage *)&buffer;
@@ -358,6 +379,9 @@ void GodotSteamMatchmaking::_bind_methods() {
   ClassDB::bind_method("requestLobbyList", &GodotSteamMatchmaking::requestLobbyList);
 
   ClassDB::bind_method("kickUserFromLobby", &GodotSteamMatchmaking::kickUserFromLobby);
+
+  ClassDB::bind_method("getLobbyMemberLimit", &GodotSteamMatchmaking::getLobbyMemberLimit);
+  ClassDB::bind_method("setLobbyMemberLimit", &GodotSteamMatchmaking::setLobbyMemberLimit);
 
   ClassDB::bind_method("getLobbyData", &GodotSteamMatchmaking::getLobbyData);
   ClassDB::bind_method("getLobbyMemberData", &GodotSteamMatchmaking::getLobbyMemberData);

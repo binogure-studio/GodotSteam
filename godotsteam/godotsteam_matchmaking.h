@@ -70,7 +70,7 @@ public:
     int type = MESSAGE_TEXT;
     uint64_t userID;
     uint32_t textLength;
-    const char *text;
+    char text[STEAM_MAX_BUFFER_SIZE - (sizeof(int) + sizeof(uint64_t) + sizeof(uint32_t))];
   };
 
   static GodotSteamMatchmaking *get_singleton();
@@ -94,6 +94,9 @@ public:
 
   bool kickUserFromLobby(uint64_t steamIDLobby, uint64_t steamIDUser);
   String getLobbyMemberData(uint64_t steamIDLobby, uint64_t steamIDUser, const String &key);
+
+  uint64_t getLobbyMemberLimit(uint64_t steamIDLobby);
+  bool setLobbyMemberLimit(uint64_t steamIDLobby, uint64_t maxMembers);
 
   Array getLobbyMemberList(uint64_t steamIDLobby);
   Dictionary getLobbyData(uint64_t steamIDLobby);

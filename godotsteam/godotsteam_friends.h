@@ -63,7 +63,7 @@ public:
   void activateGameOverlay(const String &type);
   void activateGameOverlayToUser(const String &type, uint64_t steam_id);
   void activateGameOverlayToWebPage(const String &url);
-  void activateGameOverlayToStore(AppId_t appid = 0);
+  void activateGameOverlayToStore(uint64_t appid = 0, uint64_t overlayStoreFlag = 2);
   void activateGameOverlayInviteDialog(uint64_t steam_id);
 
 protected:

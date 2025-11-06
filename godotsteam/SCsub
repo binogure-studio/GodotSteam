@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 Import('env')
 
 module_path = Dir('.').srcnode().abspath
@@ -7,6 +9,7 @@ env.Append(CPPPATH=["%s/sdk/public/" % module_path])
 # If compiling Linux
 if env["platform"]== "linuxbsd" or env["platform"] == "server":
   env.Append(LIBS=["steam_api"])
+
   if env["arch"]=="x86_32":
     env.Append(RPATH=[env.Literal('\\$$ORIGIN/linux32')])
     env.Append(LIBPATH=["%s/sdk/redistributable_bin/linux32" % module_path])
@@ -35,7 +38,7 @@ elif env["platform"] == "windows":
       env.Append(LIBPATH=["%s/sdk/redistributable_bin/win64" % module_path])
 
 # If compiling OSX
-elif env["platform"] == "osx":
+elif env["platform"] == "macos":
   env.Append(LIBS=["steam_api"])
   env.Append(LIBPATH=['%s/sdk/redistributable_bin/osx' % module_path])
 

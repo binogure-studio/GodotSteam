@@ -158,6 +158,7 @@ void GodotSteam::_bind_methods() {
   ClassDB::bind_method("steamInit", &GodotSteam::steamInit);
   ClassDB::bind_method("isSteamRunning", &GodotSteam::isSteamRunning);
   ClassDB::bind_method("run_callbacks", &GodotSteam::run_callbacks);
+  ClassDB::bind_method("close_steam", &GodotSteam::close_steam);
 
   ClassDB::bind_method("hasOtherApp", &GodotSteam::hasOtherApp);
   ClassDB::bind_method("getDLCCount", &GodotSteam::getDLCCount);

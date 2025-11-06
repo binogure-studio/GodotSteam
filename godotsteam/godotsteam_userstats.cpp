@@ -46,7 +46,7 @@ uint64_t GodotSteamUserstats::getStatInt(const String &s_key) {
 }
 
 String GodotSteamUserstats::getAchievementName(uint32 iAchievement) {
-  return SteamUserStats()->GetAchievementName(iAchievement);
+  return String::utf8(SteamUserStats()->GetAchievementName(iAchievement));
 }
 
 uint64_t GodotSteamUserstats::getNumAchievements() {
@@ -54,8 +54,7 @@ uint64_t GodotSteamUserstats::getNumAchievements() {
 }
 
 bool GodotSteamUserstats::resetAllStats(bool bAchievementsToo) {
-  SteamUserStats()->ResetAllStats(bAchievementsToo);
-  return SteamUserStats()->StoreStats();
+  return SteamUserStats()->ResetAllStats(bAchievementsToo) && SteamUserStats()->StoreStats();
 }
 
 bool GodotSteamUserstats::requestCurrentStats() {
@@ -65,8 +64,7 @@ bool GodotSteamUserstats::requestCurrentStats() {
 bool GodotSteamUserstats::setAchievement(const String &s_key) {
   STEAM_FAIL_COND_V(!isSteamUserstatsReady(), false);
 
-  SteamUserStats()->SetAchievement(s_key.utf8().get_data());
-  return SteamUserStats()->StoreStats();
+  return SteamUserStats()->SetAchievement(s_key.utf8().get_data()) && SteamUserStats()->StoreStats();
 }
 
 bool GodotSteamUserstats::setStatFloat(const String &s_key, float value) {
@@ -80,8 +78,7 @@ bool GodotSteamUserstats::setStatInt(const String &s_key, int32 value) {
 bool GodotSteamUserstats::storeStats() {
   STEAM_FAIL_COND_V(!isSteamUserstatsReady(), false);
 
-  SteamUserStats()->StoreStats();
-  return SteamUserStats()->RequestCurrentStats();
+  return SteamUserStats()->StoreStats() && SteamUserStats()->RequestCurrentStats();
 }
 
 void GodotSteamUserstats::findLeaderboard(const String &name) {
@@ -91,13 +88,11 @@ void GodotSteamUserstats::findLeaderboard(const String &name) {
     return;
   }
 
-  SteamAPICall_t apiCall =
-      SteamUserStats()->FindLeaderboard(name.utf8().get_data());
+  SteamAPICall_t apiCall = SteamUserStats()->FindLeaderboard(name.utf8().get_data());
   callResultFindLeaderboard.Set(apiCall, this, &GodotSteamUserstats::OnFindLeaderboard);
 }
 
-void GodotSteamUserstats::OnFindLeaderboard(
-    LeaderboardFindResult_t *pFindLeaderboardResult, bool bIOFailure) {
+void GodotSteamUserstats::OnFindLeaderboard(LeaderboardFindResult_t *pFindLeaderboardResult, bool bIOFailure) {
   if (!pFindLeaderboardResult->m_bLeaderboardFound || bIOFailure) {
     emit_signal("leaderboard_load_failed", "Leaderboard not found");
 
@@ -113,7 +108,7 @@ void GodotSteamUserstats::OnFindLeaderboard(
 String GodotSteamUserstats::getLeaderboardName() {
   STEAM_FAIL_COND_V(!isSteamUserstatsReady(), "");
 
-  return SteamUserStats()->GetLeaderboardName(leaderboardHandle);
+  return String::utf8(SteamUserStats()->GetLeaderboardName(leaderboardHandle));
 }
 
 uint64_t GodotSteamUserstats::getLeaderboardEntryCount() {
@@ -122,8 +117,7 @@ uint64_t GodotSteamUserstats::getLeaderboardEntryCount() {
   return SteamUserStats()->GetLeaderboardEntryCount(leaderboardHandle);
 }
 
-void GodotSteamUserstats::downloadLeaderboardEntries(uint64_t rStart, uint64_t rEnd,
-                                                     uint64_t type) {
+void GodotSteamUserstats::downloadLeaderboardEntries(uint64_t rStart, uint64_t rEnd, uint64_t type) {
   if (!isSteamUserstatsReady()) {
     emit_signal("leaderboard_entries_load_failed", "Steam user stats not initialized");
 
@@ -155,8 +149,7 @@ void GodotSteamUserstats::uploadLeaderboardScore(uint64_t score, bool keepBest) 
   callResultUploadScore.Set(apiCall, this, &GodotSteamUserstats::OnUploadScore);
 }
 
-void GodotSteamUserstats::OnUploadScore(LeaderboardScoreUploaded_t *callData,
-                               bool bIOFailure) {
+void GodotSteamUserstats::OnUploadScore(LeaderboardScoreUploaded_t *callData, bool bIOFailure) {
   // Incorrect leaderboard
   if (callData->m_hSteamLeaderboard != leaderboardHandle) {
     emit_signal("leaderboard_upload_failed", "Invalid leaderboard loaded");
@@ -180,8 +173,7 @@ void GodotSteamUserstats::OnUploadScore(LeaderboardScoreUploaded_t *callData,
               callData->m_nGlobalRankNew, callData->m_nGlobalRankPrevious);
 }
 
-void GodotSteamUserstats::OnLeaderboardEntriesLoaded(
-    LeaderboardScoresDownloaded_t *callData, bool bIOFailure) {
+void GodotSteamUserstats::OnLeaderboardEntriesLoaded(LeaderboardScoresDownloaded_t *callData, bool bIOFailure) {
   // Incorrect leaderboard
   if (callData->m_hSteamLeaderboard != leaderboardHandle) {
     return;
@@ -192,8 +184,7 @@ void GodotSteamUserstats::OnLeaderboardEntriesLoaded(
   emit_signal("leaderboard_entries_loaded");
 }
 
-void GodotSteamUserstats::getDownloadedLeaderboardEntry(
-    SteamLeaderboardEntries_t eHandle, uint64_t entryCount) {
+void GodotSteamUserstats::getDownloadedLeaderboardEntry(SteamLeaderboardEntries_t eHandle, uint64_t entryCount) {
   STEAM_FAIL_COND(!isSteamUserstatsReady());
 
   leaderboard_entries.clear();
@@ -205,8 +196,7 @@ void GodotSteamUserstats::getDownloadedLeaderboardEntry(
 
     Dictionary entryDict;
     entryDict["score"] = entry.m_nScore;
-    entryDict["name"] =
-        SteamFriends()->GetFriendPersonaName(entry.m_steamIDUser);
+    entryDict["name"] = String::utf8(SteamFriends()->GetFriendPersonaName(entry.m_steamIDUser));
     entryDict["steam_id"] = entry.m_steamIDUser.GetAccountID();
     entryDict["global_rank"] = entry.m_nGlobalRank;
 
@@ -243,13 +233,10 @@ Dictionary GodotSteamUserstats::getAchievementAndUnlockTime(const String &name) 
   return achieve;
 }
 
-bool GodotSteamUserstats::indicateAchievementProgress(const String &name,
-                                                      uint64_t curProgress,
-                                                      uint64_t maxProgress) {
+bool GodotSteamUserstats::indicateAchievementProgress(const String &name, uint64_t curProgress, uint64_t maxProgress) {
   STEAM_FAIL_COND_V(!isSteamUserstatsReady(), 0);
 
-  return SteamUserStats()->IndicateAchievementProgress(
-      name.utf8().get_data(), curProgress, maxProgress);
+  return SteamUserStats()->IndicateAchievementProgress(name.utf8().get_data(), curProgress, maxProgress);
 }
 
 void GodotSteamUserstats::_bind_methods() {

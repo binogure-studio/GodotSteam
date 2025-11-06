@@ -8,6 +8,8 @@
 #include "core/object/ref_counted.h"
 #include "godotsteam_utils.h"
 
+#define STEAM_MAX_BUFFER_SIZE 4096
+
 #define STEAM_FAIL_COND(m_cond) \
   {                             \
     if (m_cond) {               \

@@ -191,6 +191,10 @@ private:
     SteamAPI_RunCallbacks();
   }
 
+  void close_steam() {
+    SteamAPI_Shutdown();
+  }
+
   GDCLASS(GodotSteam, Object);
 };
 #endif // GODOTSTEAM_H

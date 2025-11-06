@@ -105,6 +105,9 @@ void GodotSteamUtils::_bind_methods() {
                             &GodotSteamUtils::getSecondsSinceAppActive);
   ClassDB::bind_method(D_METHOD("setOverlayNotificationPosition", "0-3"),
                             &GodotSteamUtils::setOverlayNotificationPosition);
+  ClassDB::bind_method(D_METHOD("showFloatingGamepadTextInput", "keyboardMode", "inputPositionX", "inputPositionY", "inputWidth", "inputHeight"),
+                            &GodotSteamUtils::showFloatingGamepadTextInput);
+  
   ClassDB::bind_method("getCurrentBatteryPower",
                             &GodotSteamUtils::getCurrentBatteryPower);
   ClassDB::bind_method("getServerRealTime",
